@@ -4,8 +4,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AppShell } from './components/layout/AppShell';
 import { DashboardRoute } from './routes/DashboardRoute';
 import { LoginRoute } from './routes/LoginRoute';
+import { LeadsRoute } from './routes/LeadsRoute';
 import {
-  LeadsRoute,
   CallLogRoute,
   TasksRoute,
   MeetingsRoute,
@@ -15,8 +15,10 @@ import {
 } from './routes/PlaceholderRoutes';
 import type { Task } from './types/task.types';
 import type { Meeting, MeetingStatus } from './types/meeting.types';
+import type { Lead, LeadStage } from './types/lead.types';
 import { SEED_MEETINGS } from './data/meetings.data';
 import { SEED_TASKS } from './data/tasks.data';
+import { SEED_LEADS } from './data/leads.data';
 
 function DashboardApp() {
   const [selectedNav, setSelectedNav] = useState('Dashboard');
@@ -24,6 +26,7 @@ function DashboardApp() {
   // Global domain state — passed down to routes & AppShell
   const [meetings, setMeetings] = useState<Meeting[]>(SEED_MEETINGS);
   const [tasks, setTasks]       = useState<Task[]>(SEED_TASKS);
+  const [leads, setLeads]       = useState<Lead[]>(SEED_LEADS);
 
   // Derived task lists (used by both AppShell taskbar and DashboardRoute modal)
   const activeTasks    = tasks.filter((t) => t.status === 'TODO');
@@ -31,7 +34,7 @@ function DashboardApp() {
 
   // Nav badge counts — computed once here, passed to Sidebar via AppShell
   const navCounts: Record<string, number> = {
-    Leads:    94,
+    Leads:    leads.length,
     Tasks:    activeTasks.length,
     Meetings: meetings.filter((m) => m.status === 'Scheduled').length,
   };
@@ -52,6 +55,22 @@ function DashboardApp() {
     );
   };
 
+  const handleLeadStageChange = (id: string, stage: LeadStage) => {
+    setLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, stage } : l))
+    );
+  };
+
+  const handleUpdateLead = (updated: Lead) => {
+    setLeads((prev) =>
+      prev.map((l) => (l.id === updated.id ? updated : l))
+    );
+  };
+
+  const handleCreateLead = (newLead: Lead) => {
+    setLeads((prev) => [newLead, ...prev]);
+  };
+
   const handleLogout = () => {
     alert('Logged out successfully.');
   };
@@ -66,7 +85,15 @@ function DashboardApp() {
             onCompleteTask={handleCompleteTask}
           />
         );
-      case 'Leads':         return <LeadsRoute />;
+      case 'Leads':
+        return (
+          <LeadsRoute
+            leads={leads}
+            onStageChange={handleLeadStageChange}
+            onUpdateLead={handleUpdateLead}
+            onCreateLead={handleCreateLead}
+          />
+        );
       case 'Call Log':      return <CallLogRoute />;
       case 'Tasks':         return <TasksRoute />;
       case 'Meetings':      return <MeetingsRoute />;

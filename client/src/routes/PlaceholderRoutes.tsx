@@ -15,9 +15,6 @@ function PlaceholderRoute({ title, description }: PlaceholderRouteProps) {
   );
 }
 
-export function LeadsRoute() {
-  return <PlaceholderRoute title="Leads" description="Manage and track your leads pipeline here." />;
-}
 
 export function CallLogRoute() {
   return <PlaceholderRoute title="Call Log" description="View all call activity and history." />;

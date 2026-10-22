@@ -51,7 +51,7 @@ TeraFlow CRM is a sleek, dark-mode-first CRM platform designed to help sales pro
 | 📅 Meetings Table with Status Updates | ✅ Done |
 | 🍩 Donut Chart for Lead Breakdown | ✅ Done |
 | 🌙 Dark / Light Theme Toggle | ✅ Done |
-| 👤 Leads Management | 🚧 In Progress |
+| 👤 Leads Management | ✅ Done |
 | 📞 Call Log | 🚧 In Progress |
 | ✉️ Email Outreach | 🚧 In Progress |
 | 📥 Imports | 🚧 In Progress |
