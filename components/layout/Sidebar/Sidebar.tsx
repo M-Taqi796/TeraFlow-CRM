@@ -1,3 +1,4 @@
+import { usePathname } from 'next/navigation';
 import { ChevronLeftIcon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { NavItem } from '../../navigation/NavItem';
 import { useThemeContext } from '@/context/ThemeContext';
@@ -40,8 +41,8 @@ function Avatar({ name, imageUrl, size = 'md' }: AvatarProps) {
 }
 
 interface SidebarProps {
-  selectedNav: string;
-  onNavChange: (name: string) => void;
+  selectedNav?: string;
+  onNavChange?: (name: string) => void;
   isExpanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   isMobileOpen: boolean;
@@ -62,11 +63,12 @@ export function Sidebar({
   onLogout,
 }: SidebarProps) {
   const { theme } = useThemeContext();
+  const pathname = usePathname();
 
   const showExpanded = isExpanded || isMobileOpen;
 
   const handleNavClick = (name: string) => {
-    onNavChange(name);
+    onNavChange?.(name);
     onMobileClose();
   };
 
@@ -129,17 +131,25 @@ export function Sidebar({
 
         {/* Nav Items */}
         <nav className="p-2 space-y-1">
-          {STATIC_NAV_ITEMS.map((item) => (
-            <NavItem
-              key={item.name}
-              name={item.name}
-              icon={item.icon}
-              count={navCounts[item.name]}
-              isActive={selectedNav === item.name}
-              isExpanded={showExpanded}
-              onClick={() => handleNavClick(item.name)}
-            />
-          ))}
+          {STATIC_NAV_ITEMS.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== '/dashboard' && pathname?.startsWith(item.href)) ||
+              selectedNav === item.name;
+
+            return (
+              <NavItem
+                key={item.name}
+                name={item.name}
+                href={item.href}
+                icon={item.icon}
+                count={navCounts[item.name]}
+                isActive={isActive}
+                isExpanded={showExpanded}
+                onClick={() => handleNavClick(item.name)}
+              />
+            );
+          })}
         </nav>
       </div>
 

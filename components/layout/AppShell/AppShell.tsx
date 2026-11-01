@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { Task } from '@/types/task.types';
@@ -6,29 +8,43 @@ import { Header } from '../Header';
 import { Taskbar } from '../Taskbar';
 import { Backdrop } from '../../ui/Backdrop';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useCRM } from '@/context/CRMContext';
 
 interface AppShellProps {
   children: ReactNode;
-  selectedNav: string;
-  onNavChange: (name: string) => void;
-  activeTasks: Task[];
-  completedTasks: Task[];
-  onCompleteTask: (task: Task) => void;
+  selectedNav?: string;
+  onNavChange?: (name: string) => void;
+  activeTasks?: Task[];
+  completedTasks?: Task[];
+  onCompleteTask?: (task: Task) => void;
   navCounts?: Record<string, number>;
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 export function AppShell({
   children,
   selectedNav,
   onNavChange,
-  activeTasks,
-  completedTasks,
-  onCompleteTask,
-  navCounts = {},
-  onLogout,
+  activeTasks: propActiveTasks,
+  completedTasks: propCompletedTasks,
+  onCompleteTask: propOnCompleteTask,
+  navCounts: propNavCounts,
+  onLogout: propOnLogout,
 }: AppShellProps) {
   const { isDarkMode, theme } = useThemeContext();
+  const crm = useCRM();
+
+  const activeTasks    = propActiveTasks    ?? crm.activeTasks;
+  const completedTasks = propCompletedTasks ?? crm.completedTasks;
+  const navCounts      = propNavCounts      ?? crm.navCounts;
+  const onLogout       = propOnLogout       ?? crm.onLogout;
+  const handleTaskComplete = (task: Task) => {
+    if (propOnCompleteTask) {
+      propOnCompleteTask(task);
+    } else {
+      crm.onCompleteTask(task.id, 'Completed');
+    }
+  };
 
   const [isNavExpanded, setIsNavExpanded]         = useState(true);
   const [isMobileNavOpen, setIsMobileNavOpen]     = useState(false);
@@ -79,7 +95,7 @@ export function AppShell({
       <Taskbar
         activeTasks={activeTasks}
         completedTasks={completedTasks}
-        onCompleteTask={onCompleteTask}
+        onCompleteTask={handleTaskComplete}
         isExpanded={isTaskbarExpanded}
         onExpandedChange={setIsTaskbarExpanded}
         isMobileOpen={isMobileTasksOpen}

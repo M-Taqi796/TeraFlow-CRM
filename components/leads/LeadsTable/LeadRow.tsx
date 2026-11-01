@@ -10,22 +10,30 @@ interface LeadRowProps {
 
 const STAGE_COLORS_LIGHT: Record<LeadStage, string> = {
   'New':           'bg-gray-100 text-gray-700 border-gray-300',
+  'Lead':          'bg-gray-100 text-gray-700 border-gray-300',
   'Contacted':     'bg-blue-50 text-primary border-primary/40',
   'Qualified':     'bg-violet-50 text-violet-700 border-violet-300',
+  'Hot Prospect':  'bg-amber-50 text-amber-700 border-amber-300',
   'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-300',
   'Negotiation':   'bg-orange-50 text-orange-700 border-orange-300',
   'Won':           'bg-emerald-50 text-emerald-700 border-emerald-300',
   'Lost':          'bg-rose-50 text-rose-700 border-rose-300',
+  'Past Client':   'bg-emerald-50 text-emerald-700 border-emerald-300',
+  'Trash':         'bg-rose-50 text-rose-700 border-rose-300',
 };
 
 const STAGE_COLORS_DARK: Record<LeadStage, string> = {
   'New':           'bg-zinc-800 text-zinc-300 border-zinc-700',
+  'Lead':          'bg-zinc-800 text-zinc-300 border-zinc-700',
   'Contacted':     'bg-blue-950/70 text-blue-300 border-blue-800',
   'Qualified':     'bg-violet-950/70 text-violet-300 border-violet-800',
+  'Hot Prospect':  'bg-amber-950/70 text-amber-300 border-amber-800',
   'Proposal Sent': 'bg-amber-950/70 text-amber-300 border-amber-800',
   'Negotiation':   'bg-orange-950/70 text-orange-300 border-orange-800',
   'Won':           'bg-emerald-950/70 text-emerald-300 border-emerald-800',
   'Lost':          'bg-rose-950/70 text-rose-300 border-rose-800',
+  'Past Client':   'bg-emerald-950/70 text-emerald-300 border-emerald-800',
+  'Trash':         'bg-rose-950/70 text-rose-300 border-rose-800',
 };
 
 const PRIORITY_CONFIG: Record<LeadPriority, { dot: string; label: string; textLight: string; textDark: string }> = {

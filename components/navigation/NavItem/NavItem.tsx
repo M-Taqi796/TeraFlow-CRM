@@ -1,17 +1,20 @@
 import type { ElementType } from 'react';
+import Link from 'next/link';
 import { useThemeContext } from '@/context/ThemeContext';
 
 interface NavItemProps {
   name: string;
+  href: string;
   icon: ElementType;
   count?: number;
   isActive: boolean;
   isExpanded: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function NavItem({
   name,
+  href,
   icon: Icon,
   count,
   isActive,
@@ -21,7 +24,8 @@ export function NavItem({
   const { theme } = useThemeContext();
 
   return (
-    <button
+    <Link
+      href={href}
       onClick={onClick}
       title={!isExpanded ? name : undefined}
       className={`relative w-full flex items-center rounded-lg text-sm font-medium transition-colors ${
@@ -57,6 +61,6 @@ export function NavItem({
       {!isExpanded && count !== undefined && count > 0 && (
         <span className="absolute right-2 top-2 w-2 h-2 rounded-full bg-primary ring-2 ring-white dark:ring-zinc-900" />
       )}
-    </button>
+    </Link>
   );
 }
