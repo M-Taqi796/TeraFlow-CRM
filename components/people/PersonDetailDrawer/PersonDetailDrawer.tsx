@@ -1081,7 +1081,7 @@ export function PersonDetailDrawer({
                         key={tag}
                         type="button"
                         onClick={() => handleAddTag(tag)}
-                        className={`text-[11px] px-2 py-0.5 rounded-md border border-dashed ${theme.border} ${theme.hoverBg} ${theme.textMuted} hover:text-primary hover:border-primary transition-colors cursor-pointer flex items-center gap-1`}
+                        className={`text-[11px] px-2 py-0.5 rounded-md border border-dashed border-slate-300 dark:border-zinc-700 ${theme.hoverBg} ${theme.textMuted} hover:text-primary hover:border-primary transition-colors cursor-pointer flex items-center gap-1`}
                       >
                         <PlusIcon className="w-3 h-3" />
                         <span>{tag}</span>

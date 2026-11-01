@@ -300,10 +300,10 @@ export function NewPersonModal({
               {/* Minimal Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed ${
+                className={`border border-dashed ${
                   selectedFile
                     ? 'border-primary bg-primary/5'
-                    : 'border-slate-300 dark:border-zinc-700 hover:border-primary'
+                    : 'border-slate-300 dark:border-zinc-700 hover:border-primary/70'
                 } rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2`}
               >
                 <input
