@@ -18,6 +18,8 @@
   --color-primary-700: #005599;
   --color-primary-800: #04487e;
   --color-primary-900: #093c68;
+
+  --color-border: #CBD5E1;
 }
 
 :root {
@@ -27,15 +29,15 @@
   --color-primary-light: #e0f0fe;
 
   /* Neutral / Dark Colors */
-  --color-dark: #2C2C2C;
-  --color-dark-muted: #5d5d5d;
-  --color-dark-subtle: #888888;
+  --color-dark: #1E293B;
+  --color-dark-muted: #475569;
+  --color-dark-subtle: #64748B;
 
   /* Backgrounds & Surface */
-  --color-bg: #FFFFFF;
+  --color-bg: #F8FAFC;
   --color-surface: #FFFFFF;
-  --color-surface-alt: #F9FAFB;
-  --color-border: #E5E7EB;
+  --color-surface-alt: #F1F5F9;
+  --color-border: #CBD5E1;
 
   /* Typography */
   --font-family-base: 'Fira Sans', sans-serif;
@@ -50,9 +52,9 @@
   --color-dark-muted: #9CA3AF;
   --color-dark-subtle: #6B7280;
 
-  --color-bg: #18181B;
-  --color-surface: #202024;
-  --color-surface-alt: #27272A;
+  --color-bg: #121214;
+  --color-surface: #18181C;
+  --color-surface-alt: #202026;
   --color-border: #333338;
 }
 
@@ -142,7 +144,7 @@ html, body {
 .login-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #CBD5E1;
   border-radius: 0.625rem;
   font-size: 0.9375rem;
   font-family: var(--font-family-base);

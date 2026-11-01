@@ -23,12 +23,12 @@ interface LeadDetailModalProps {
 
 const STAGE_COLORS: Record<LeadStage, { light: string; dark: string }> = {
   'New':            { light: 'bg-gray-100 text-gray-700 border-gray-300',             dark: 'bg-zinc-800 text-zinc-300 border-zinc-700' },
-  'Contacted':      { light: 'bg-blue-50 text-primary border-primary/25',             dark: 'bg-blue-950/70 text-blue-300 border-blue-800' },
-  'Qualified':      { light: 'bg-violet-50 text-violet-700 border-violet-200',        dark: 'bg-violet-950/70 text-violet-300 border-violet-800' },
-  'Proposal Sent':  { light: 'bg-amber-50 text-amber-700 border-amber-200',           dark: 'bg-amber-950/70 text-amber-300 border-amber-800' },
-  'Negotiation':    { light: 'bg-orange-50 text-orange-700 border-orange-200',        dark: 'bg-orange-950/70 text-orange-300 border-orange-800' },
-  'Won':            { light: 'bg-emerald-50 text-emerald-700 border-emerald-200',     dark: 'bg-emerald-950/70 text-emerald-300 border-emerald-800' },
-  'Lost':           { light: 'bg-rose-50 text-rose-700 border-rose-200',              dark: 'bg-rose-950/70 text-rose-300 border-rose-800' },
+  'Contacted':      { light: 'bg-blue-50 text-primary border-primary/40',             dark: 'bg-blue-950/70 text-blue-300 border-blue-800' },
+  'Qualified':      { light: 'bg-violet-50 text-violet-700 border-violet-300',        dark: 'bg-violet-950/70 text-violet-300 border-violet-800' },
+  'Proposal Sent':  { light: 'bg-amber-50 text-amber-700 border-amber-300',           dark: 'bg-amber-950/70 text-amber-300 border-amber-800' },
+  'Negotiation':    { light: 'bg-orange-50 text-orange-700 border-orange-300',        dark: 'bg-orange-950/70 text-orange-300 border-orange-800' },
+  'Won':            { light: 'bg-emerald-50 text-emerald-700 border-emerald-300',     dark: 'bg-emerald-950/70 text-emerald-300 border-emerald-800' },
+  'Lost':           { light: 'bg-rose-50 text-rose-700 border-rose-300',              dark: 'bg-rose-950/70 text-rose-300 border-rose-800' },
 };
 
 const PRIORITY_COLORS: Record<LeadPriority, { light: string; dark: string; dot: string }> = {

@@ -10,12 +10,12 @@ interface LeadRowProps {
 
 const STAGE_COLORS_LIGHT: Record<LeadStage, string> = {
   'New':           'bg-gray-100 text-gray-700 border-gray-300',
-  'Contacted':     'bg-blue-50 text-primary border-primary/25',
-  'Qualified':     'bg-violet-50 text-violet-700 border-violet-200',
-  'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-200',
-  'Negotiation':   'bg-orange-50 text-orange-700 border-orange-200',
-  'Won':           'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'Lost':          'bg-rose-50 text-rose-700 border-rose-200',
+  'Contacted':     'bg-blue-50 text-primary border-primary/40',
+  'Qualified':     'bg-violet-50 text-violet-700 border-violet-300',
+  'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-300',
+  'Negotiation':   'bg-orange-50 text-orange-700 border-orange-300',
+  'Won':           'bg-emerald-50 text-emerald-700 border-emerald-300',
+  'Lost':          'bg-rose-50 text-rose-700 border-rose-300',
 };
 
 const STAGE_COLORS_DARK: Record<LeadStage, string> = {

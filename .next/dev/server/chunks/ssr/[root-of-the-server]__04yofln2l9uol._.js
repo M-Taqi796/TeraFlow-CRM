@@ -109,16 +109,16 @@ function useTheme() {
     ]);
     const toggleDarkMode = ()=>setIsDarkMode((prev)=>!prev);
     const theme = {
-        bgApp: isDarkMode ? 'bg-[#121214]' : 'bg-[#FFFFFF]',
+        bgApp: isDarkMode ? 'bg-[#121214]' : 'bg-[#F8FAFC]',
         bgPanel: isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]',
-        bgSubtle: isDarkMode ? 'bg-[#202026]' : 'bg-[#F9FAFB]',
-        border: isDarkMode ? 'border-[#2E2E36]' : 'border-[#E5E7EB]',
-        textMain: isDarkMode ? 'text-[#F3F4F6]' : 'text-[#2C2C2C]',
-        textMuted: isDarkMode ? 'text-[#9CA3AF]' : 'text-[#6B7280]',
-        textSubtle: isDarkMode ? 'text-[#6B7280]' : 'text-[#9CA3AF]',
-        inputBg: isDarkMode ? 'bg-[#202026]' : 'bg-[#F9FAFB]',
-        inputBorder: isDarkMode ? 'border-[#383842]' : 'border-[#E5E7EB]',
-        hoverBg: isDarkMode ? 'hover:bg-[#25252D]' : 'hover:bg-[#F3F4F6]',
+        bgSubtle: isDarkMode ? 'bg-[#202026]' : 'bg-[#F1F5F9]',
+        border: isDarkMode ? 'border-[#333338]' : 'border-[#CBD5E1]',
+        textMain: isDarkMode ? 'text-[#F3F4F6]' : 'text-[#1E293B]',
+        textMuted: isDarkMode ? 'text-[#9CA3AF]' : 'text-[#475569]',
+        textSubtle: isDarkMode ? 'text-[#6B7280]' : 'text-[#64748B]',
+        inputBg: isDarkMode ? 'bg-[#202026]' : 'bg-[#FFFFFF]',
+        inputBorder: isDarkMode ? 'border-[#383842]' : 'border-[#CBD5E1]',
+        hoverBg: isDarkMode ? 'hover:bg-[#25252D]' : 'hover:bg-[#F1F5F9]',
         rowHover: isDarkMode ? 'hover:bg-[#202028]' : 'hover:bg-[#F0F8FE]'
     };
     return {

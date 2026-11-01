@@ -289,7 +289,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border mt-4">
+          <div className={`flex items-center justify-end gap-3 pt-3 border-t ${theme.border} mt-4`}>
             <button
               type="button"
               onClick={onClose}

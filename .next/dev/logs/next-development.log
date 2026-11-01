@@ -1,9 +1,22 @@
-{"timestamp":"00:00:04.687","source":"Server","level":"LOG","message":"- Cache Components enabled"}
-{"timestamp":"00:00:04.687","source":"Server","level":"LOG","message":"- Partial Prefetching enabled"}
-{"timestamp":"00:00:04.687","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:04.688","source":"Server","level":"LOG","message":"✓ Generated AGENTS.md for AI agents. Set `agentRules: false` in next.config to disable."}
-{"timestamp":"00:00:53.879","source":"Server","level":"LOG","message":"○ Compiling / ..."}
-{"timestamp":"00:01:06.820","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:01:32.162","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:02:24.332","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:02:25.325","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:01.172","source":"Server","level":"LOG","message":"- Cache Components enabled"}
+{"timestamp":"00:00:01.172","source":"Server","level":"LOG","message":"- Partial Prefetching enabled"}
+{"timestamp":"00:00:01.172","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:13.042","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:15.986","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:43.440","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:35.876","source":"Server","level":"LOG","message":"✓ Compiled in 30ms"}
+{"timestamp":"00:01:41.649","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:43.255","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:44.940","source":"Server","level":"LOG","message":"✓ Compiled in 18ms"}
+{"timestamp":"00:01:48.497","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:50.148","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:53.160","source":"Server","level":"LOG","message":"✓ Compiled in 24ms"}
+{"timestamp":"00:02:07.895","source":"Server","level":"LOG","message":"✓ Compiled in 20ms"}
+{"timestamp":"00:08:52.757","source":"Server","level":"WARN","message":"⚠ Fast Refresh had to perform a full reload when ./hooks/useTheme.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload"}
+{"timestamp":"00:08:52.784","source":"Server","level":"LOG","message":"✓ Compiled in 67ms"}
+{"timestamp":"00:08:53.136","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:09:17.187","source":"Server","level":"LOG","message":"✓ Compiled in 123ms"}
+{"timestamp":"00:09:23.544","source":"Server","level":"LOG","message":"✓ Compiled in 22ms"}
+{"timestamp":"00:09:37.797","source":"Server","level":"LOG","message":"✓ Compiled in 47ms"}
+{"timestamp":"00:09:50.678","source":"Server","level":"LOG","message":"✓ Compiled in 32ms"}
+{"timestamp":"00:10:05.351","source":"Server","level":"LOG","message":"✓ Compiled in 17ms"}

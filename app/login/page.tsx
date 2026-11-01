@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import type { Metadata } from 'next';
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default function LoginPage() {
   const router = useRouter();
@@ -119,7 +120,7 @@ export default function LoginPage() {
           </form>
 
           <p className="login-footer-text">
-            TeraFlow CRM &mdash; &copy; {new Date().getFullYear()} TeraOnic. All rights reserved.
+            TeraFlow CRM &mdash; &copy; {CURRENT_YEAR} TeraOnic. All rights reserved.
           </p>
         </div>
       </div>

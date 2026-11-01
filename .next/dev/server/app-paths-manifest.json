@@ -1,7 +1,4 @@
 {
-  "/api/leads/route": "app/api/leads/route.js",
-  "/api/meetings/route": "app/api/meetings/route.js",
-  "/api/tasks/route": "app/api/tasks/route.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js"

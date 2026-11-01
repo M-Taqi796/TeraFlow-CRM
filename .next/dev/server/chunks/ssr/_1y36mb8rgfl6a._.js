@@ -828,15 +828,15 @@ function MeetingRow({ meeting: m, onStatusChange }) {
         }
         switch(status){
             case 'Scheduled':
-                return 'bg-blue-50 text-primary border-primary/25';
+                return 'bg-blue-50 text-primary border-primary/40';
             case 'Deal Done':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                return 'bg-emerald-50 text-emerald-700 border-emerald-300';
             case 'Deal Denied':
-                return 'bg-rose-50 text-rose-700 border-rose-200';
+                return 'bg-rose-50 text-rose-700 border-rose-300';
             case 'Not attended':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
+                return 'bg-amber-50 text-amber-700 border-amber-300';
             default:
-                return 'bg-gray-100 text-gray-700 border-gray-200';
+                return 'bg-gray-100 text-gray-700 border-gray-300';
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -2281,27 +2281,27 @@ const STAGE_COLORS = {
         dark: 'bg-zinc-800 text-zinc-300 border-zinc-700'
     },
     'Contacted': {
-        light: 'bg-blue-50 text-primary border-primary/25',
+        light: 'bg-blue-50 text-primary border-primary/40',
         dark: 'bg-blue-950/70 text-blue-300 border-blue-800'
     },
     'Qualified': {
-        light: 'bg-violet-50 text-violet-700 border-violet-200',
+        light: 'bg-violet-50 text-violet-700 border-violet-300',
         dark: 'bg-violet-950/70 text-violet-300 border-violet-800'
     },
     'Proposal Sent': {
-        light: 'bg-amber-50 text-amber-700 border-amber-200',
+        light: 'bg-amber-50 text-amber-700 border-amber-300',
         dark: 'bg-amber-950/70 text-amber-300 border-amber-800'
     },
     'Negotiation': {
-        light: 'bg-orange-50 text-orange-700 border-orange-200',
+        light: 'bg-orange-50 text-orange-700 border-orange-300',
         dark: 'bg-orange-950/70 text-orange-300 border-orange-800'
     },
     'Won': {
-        light: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        light: 'bg-emerald-50 text-emerald-700 border-emerald-300',
         dark: 'bg-emerald-950/70 text-emerald-300 border-emerald-800'
     },
     'Lost': {
-        light: 'bg-rose-50 text-rose-700 border-rose-200',
+        light: 'bg-rose-50 text-rose-700 border-rose-300',
         dark: 'bg-rose-950/70 text-rose-300 border-rose-800'
     }
 };
@@ -3233,12 +3233,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$context$2f$ThemeContext$2e$t
 ;
 const STAGE_COLORS_LIGHT = {
     'New': 'bg-gray-100 text-gray-700 border-gray-300',
-    'Contacted': 'bg-blue-50 text-primary border-primary/25',
-    'Qualified': 'bg-violet-50 text-violet-700 border-violet-200',
-    'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-200',
-    'Negotiation': 'bg-orange-50 text-orange-700 border-orange-200',
-    'Won': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    'Lost': 'bg-rose-50 text-rose-700 border-rose-200'
+    'Contacted': 'bg-blue-50 text-primary border-primary/40',
+    'Qualified': 'bg-violet-50 text-violet-700 border-violet-300',
+    'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-300',
+    'Negotiation': 'bg-orange-50 text-orange-700 border-orange-300',
+    'Won': 'bg-emerald-50 text-emerald-700 border-emerald-300',
+    'Lost': 'bg-rose-50 text-rose-700 border-rose-300'
 };
 const STAGE_COLORS_DARK = {
     'New': 'bg-zinc-800 text-zinc-300 border-zinc-700',
@@ -4336,7 +4336,7 @@ function NewLeadModal({ isOpen, onClose, onCreateLead }) {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex items-center justify-end gap-3 pt-3 border-t border-border mt-4",
+                            className: `flex items-center justify-end gap-3 pt-3 border-t ${theme.border} mt-4`,
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     type: "button",
