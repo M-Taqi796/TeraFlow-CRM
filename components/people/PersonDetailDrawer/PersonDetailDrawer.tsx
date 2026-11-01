@@ -642,7 +642,7 @@ export function PersonDetailDrawer({
         className={`relative w-full max-w-4xl max-h-[90vh] ${theme.bgPanel} border ${theme.border} rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden animate-in zoom-in-95 fade-in duration-200`}
       >
         {/* Top Header */}
-        <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between shrink-0 ${theme.bgSubtle}`}>
+        <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900`}>
           {/* Company & Name (Company on Top) */}
           <div className="flex-1 min-w-0 pr-4">
             {isEditingNames ? (
@@ -753,7 +753,7 @@ export function PersonDetailDrawer({
           {/* Left Column (5 cols): Contact Info, Tags, Overview Notes, Niche & City */}
           <div className="md:col-span-5 space-y-5">
             {/* Contact Info Card */}
-            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-3`}>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
                   Contact Info
@@ -820,10 +820,10 @@ export function PersonDetailDrawer({
               )}
 
               {/* Displayed Fields with Inline Edit & Delete */}
-              <div className="space-y-2 text-xs">
+              <div className="space-y-1 text-xs">
                 {/* Primary & Additional Phones */}
                 {person.phones.map((ph, idx) => (
-                  <div key={`phone-${idx}`} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                  <div key={`phone-${idx}`} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
                     {editingPhoneIdx === idx ? (
                       <div className="flex items-center gap-1.5">
                         <input
@@ -891,7 +891,7 @@ export function PersonDetailDrawer({
 
                 {/* Primary & Additional Emails */}
                 {person.emails.map((em, idx) => (
-                  <div key={`email-${idx}`} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                  <div key={`email-${idx}`} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
                     {editingEmailIdx === idx ? (
                       <div className="flex items-center gap-1.5">
                         <input
@@ -959,7 +959,7 @@ export function PersonDetailDrawer({
 
                 {/* Dynamic Contact Fields (Website, Social, Address, etc.) */}
                 {(person.contactFields || []).map((cf) => (
-                  <div key={cf.id} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                  <div key={cf.id} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
                     {editingFieldId === cf.id ? (
                       <div className="space-y-1.5">
                         <input
@@ -1039,8 +1039,8 @@ export function PersonDetailDrawer({
               </div>
             </div>
 
-            {/* Tags Box: 1- Assigned Tags, 2- Suggestions, 3- Add New Tag */}
-            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-3`}>
+            {/* Tags Box */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
               <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain} block`}>
                 Tags
               </span>
@@ -1117,7 +1117,7 @@ export function PersonDetailDrawer({
             </div>
 
             {/* Niche & Location (Editable) */}
-            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-2.5 text-xs`}>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
                   Niche & Location
@@ -1315,7 +1315,7 @@ export function PersonDetailDrawer({
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       actionMode === 'call'
                         ? 'bg-blue-600 text-white shadow-xs'
-                        : `${theme.bgSubtle} border ${theme.border} ${theme.textMain} hover:border-blue-500`
+                        : 'border border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
                     }`}
                   >
                     <PhoneIcon className="w-3.5 h-3.5" />
@@ -1335,7 +1335,7 @@ export function PersonDetailDrawer({
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       actionMode === 'email'
                         ? 'bg-amber-600 text-white shadow-xs'
-                        : `${theme.bgSubtle} border ${theme.border} ${theme.textMain} hover:border-amber-500`
+                        : 'border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
                     }`}
                   >
                     <EnvelopeIcon className="w-3.5 h-3.5" />
@@ -1510,9 +1510,6 @@ export function PersonDetailDrawer({
                   <h3 className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
                     Activity Timeline ({filteredActivities.length})
                   </h3>
-                  <p className={`text-[11px] ${theme.textSubtle}`}>
-                    Every call, email, stage change, tag, and note is logged here.
-                  </p>
                 </div>
 
                 {/* Filter Dropdown with Checkboxes */}

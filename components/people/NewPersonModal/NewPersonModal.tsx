@@ -35,7 +35,7 @@ export function NewPersonModal({
   onCreate,
   onBulkCreate,
 }: NewPersonModalProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode } = useThemeContext();
   const {
     allTags,
     onAddGlobalTag,
@@ -47,7 +47,7 @@ export function NewPersonModal({
     onBulkCreatePeople,
   } = useCRM();
 
-  // Active tab: 'import' is Default / Primary
+  // Active tab: 'import' or 'manual'
   const [activeTab, setActiveTab] = useState<ModalTab>('import');
 
   // ---------- TAB 1: FILE IMPORT STATE ----------
@@ -100,11 +100,9 @@ export function NewPersonModal({
     }
   };
 
-  // Trigger import
   const handleExecuteImport = () => {
     if (parsedLeads.length === 0) return;
 
-    // Save custom niche/city to context if created
     if (isCustomImportNiche && customImportNiche.trim()) {
       onAddCustomNiche(customImportNiche.trim());
     }
@@ -149,7 +147,6 @@ export function NewPersonModal({
   const [manualTags, setManualTags] = useState<string[]>(['VIP']);
   const [manualTagInput, setManualTagInput] = useState('');
 
-  // Handle Manual Phone & Email inputs
   const handleAddPhoneField = () => setPhones([...phones, '']);
   const handlePhoneChange = (idx: number, val: string) => {
     const updated = [...phones];
@@ -226,7 +223,7 @@ export function NewPersonModal({
           id: `act-${Date.now()}`,
           type: 'note',
           title: 'Contact Created',
-          description: `Contact added manually under ${manualStage}.`,
+          description: `Added under ${manualStage}.`,
           timestamp: new Date().toISOString(),
           relativeTime: 'Just now',
           author: 'Muhammad Taqi',
@@ -246,93 +243,68 @@ export function NewPersonModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
       <div
-        className={`w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
+        className={`w-full max-w-xl max-h-[90vh] flex flex-col rounded-2xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className={`p-5 border-b ${theme.border} flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50`}>
-          <div>
-            <h2 className={`text-lg font-bold ${theme.textMain}`}>
-              Add New Leads
+        {/* Header - Super Clean */}
+        <div className={`px-5 py-4 border-b ${theme.border} flex items-center justify-between shrink-0`}>
+          <div className="flex items-center gap-4">
+            <h2 className={`text-base font-bold tracking-tight ${theme.textMain}`}>
+              New Lead
             </h2>
-            <p className={`text-xs ${theme.textMuted} mt-0.5`}>
-              Import lead files in bulk or create an individual contact manually.
-            </p>
+
+            {/* Clean Tabs */}
+            <div className="flex items-center gap-1 border-l border-slate-200 dark:border-zinc-800 pl-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab('import')}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  activeTab === 'import'
+                    ? 'bg-primary text-white shadow-xs'
+                    : `${theme.textMuted} hover:${theme.textMain}`
+                }`}
+              >
+                Import Leads
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('manual')}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  activeTab === 'manual'
+                    ? 'bg-primary text-white shadow-xs'
+                    : `${theme.textMuted} hover:${theme.textMain}`
+                }`}
+              >
+                Add Contact
+              </button>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className={`p-1.5 rounded-lg ${theme.textMuted} hover:${theme.textMain} ${theme.hoverBg} transition-colors cursor-pointer`}
+            className={`p-1 rounded-lg ${theme.textMuted} hover:${theme.textMain} transition-colors cursor-pointer`}
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Toggle: Primary Import vs Add Single Contact */}
-        <div className={`px-5 pt-3 border-b ${theme.border} flex items-center gap-2 bg-slate-50/30 dark:bg-slate-900/30 shrink-0`}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('import')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'import'
-                ? 'border-primary text-primary'
-                : `border-transparent ${theme.textMuted} hover:${theme.textMain}`
-            }`}
-          >
-            <ArrowUpTrayIcon className="w-4 h-4" />
-            <span>Import Leads (Primary)</span>
-            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-bold">
-              Default
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('manual')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'manual'
-                ? 'border-primary text-primary'
-                : `border-transparent ${theme.textMuted} hover:${theme.textMain}`
-            }`}
-          >
-            <UserPlusIcon className="w-4 h-4" />
-            <span>Add Single Contact</span>
-          </button>
-        </div>
-
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* ============================================================== */}
-          {/* TAB 1: PRIMARY IMPORT FLOW                                     */}
-          {/* ============================================================== */}
+          {/* TAB 1: IMPORT LEADS */}
           {activeTab === 'import' && (
             <div className="space-y-4 animate-in fade-in">
-              {/* Formats Supported Badges */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className={`text-[11px] font-semibold ${theme.textSubtle}`}>Supported Formats:</span>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Excel (.xlsx, .xls)
-                </span>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  CSV (.csv)
-                </span>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                  JSON (.json)
-                </span>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                  vCard (.vcf)
-                </span>
-              </div>
-
-              {/* Upload Dropzone */}
+              {/* Minimal Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed ${
-                  selectedFile ? 'border-primary bg-primary/5' : `${theme.border} hover:border-primary/50 ${theme.bgSubtle}`
-                } rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2.5`}
+                  selectedFile
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-300 dark:border-zinc-700 hover:border-primary'
+                } rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2`}
               >
                 <input
                   ref={fileInputRef}
@@ -345,194 +317,182 @@ export function NewPersonModal({
                   }}
                 />
 
-                <DocumentArrowUpIcon className="w-10 h-10 text-primary/80" />
+                <DocumentArrowUpIcon className="w-8 h-8 text-primary" />
 
                 {selectedFile ? (
                   <div>
                     <p className={`text-xs font-bold ${theme.textMain}`}>
-                      Selected: {selectedFile.name}
+                      {selectedFile.name}
                     </p>
                     <p className={`text-[11px] ${theme.textMuted} mt-0.5`}>
-                      {(selectedFile.size / 1024).toFixed(1)} KB &bull; Click to choose a different file
+                      {(selectedFile.size / 1024).toFixed(1)} KB &bull; Click to change file
                     </p>
                   </div>
                 ) : (
                   <div>
                     <p className={`text-xs font-semibold ${theme.textMain}`}>
-                      Click to upload or drag and drop your leads file here
+                      Drop leads file here or click to browse
                     </p>
                     <p className={`text-[11px] ${theme.textMuted} mt-0.5`}>
-                      Automatically parses columns, discards junk fields, and matches relevant contacts.
+                      Excel (.xlsx, .xls), CSV, JSON, vCard (.vcf)
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Parsing Indicator */}
               {isParsing && (
-                <div className="flex items-center justify-center gap-2 py-3 text-xs text-primary font-medium">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span>Parsing and normalizing file data...</span>
+                <div className="flex items-center justify-center gap-2 py-2 text-xs text-primary font-medium">
+                  <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span>Parsing file...</span>
                 </div>
               )}
 
-              {/* Error Message */}
               {parseError && (
-                <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-300 text-xs font-medium">
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-medium">
                   {parseError}
                 </div>
               )}
 
-              {/* Target Niche, City, and Stage Settings */}
-              <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-3`}>
-                <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain} block`}>
-                  Import Destination & Categorization
-                </span>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Niche Selection */}
-                  <div className="space-y-1">
-                    <label className={`text-xs font-medium ${theme.textMuted} block`}>Niche / Industry</label>
-                    {!isCustomImportNiche ? (
-                      <select
-                        value={importNiche}
-                        onChange={(e) => {
-                          if (e.target.value === '__add_new__') {
-                            setIsCustomImportNiche(true);
-                          } else {
-                            setImportNiche(e.target.value);
-                          }
-                        }}
-                        className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-                      >
-                        {combinedNiches.map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                        <option value="__add_new__">+ Add New Niche...</option>
-                      </select>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          required
-                          value={customImportNiche}
-                          onChange={(e) => setCustomImportNiche(e.target.value)}
-                          placeholder="Type custom niche..."
-                          className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setIsCustomImportNiche(false)}
-                          className="text-xs text-slate-400 hover:text-slate-600 p-1"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* City Selection */}
-                  <div className="space-y-1">
-                    <label className={`text-xs font-medium ${theme.textMuted} block`}>City / Location</label>
-                    {!isCustomImportCity ? (
-                      <select
-                        value={importCity}
-                        onChange={(e) => {
-                          if (e.target.value === '__add_new__') {
-                            setIsCustomImportCity(true);
-                          } else {
-                            setImportCity(e.target.value);
-                          }
-                        }}
-                        className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-                      >
-                        {combinedCities.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                        <option value="__add_new__">+ Add New City...</option>
-                      </select>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          required
-                          value={customImportCity}
-                          onChange={(e) => setCustomImportCity(e.target.value)}
-                          placeholder="Type custom city..."
-                          className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setIsCustomImportCity(false)}
-                          className="text-xs text-slate-400 hover:text-slate-600 p-1"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Pipeline Stage */}
-                  <div className="space-y-1">
-                    <label className={`text-xs font-medium ${theme.textMuted} block`}>Pipeline Stage</label>
+              {/* Direct Categorization Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {/* Niche */}
+                <div className="space-y-1">
+                  <label className={`text-[11px] font-semibold ${theme.textMain} block`}>Niche</label>
+                  {!isCustomImportNiche ? (
                     <select
-                      value={importStage}
-                      onChange={(e) => setImportStage(e.target.value as PersonStage)}
-                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                      value={importNiche}
+                      onChange={(e) => {
+                        if (e.target.value === '__add_new__') {
+                          setIsCustomImportNiche(true);
+                        } else {
+                          setImportNiche(e.target.value);
+                        }
+                      }}
+                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                     >
-                      {PERSON_STAGES.map((stg) => (
-                        <option key={stg} value={stg}>
-                          {stg}
+                      {combinedNiches.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
                         </option>
                       ))}
+                      <option value="__add_new__">+ Add New Niche...</option>
                     </select>
-                  </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        required
+                        value={customImportNiche}
+                        onChange={(e) => setCustomImportNiche(e.target.value)}
+                        placeholder="Niche name..."
+                        className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomImportNiche(false)}
+                        className="text-xs text-slate-400 p-1 cursor-pointer"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* City */}
+                <div className="space-y-1">
+                  <label className={`text-[11px] font-semibold ${theme.textMain} block`}>City</label>
+                  {!isCustomImportCity ? (
+                    <select
+                      value={importCity}
+                      onChange={(e) => {
+                        if (e.target.value === '__add_new__') {
+                          setIsCustomImportCity(true);
+                        } else {
+                          setImportCity(e.target.value);
+                        }
+                      }}
+                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                    >
+                      {combinedCities.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                      <option value="__add_new__">+ Add New City...</option>
+                    </select>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        required
+                        value={customImportCity}
+                        onChange={(e) => setCustomImportCity(e.target.value)}
+                        placeholder="City name..."
+                        className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomImportCity(false)}
+                        className="text-xs text-slate-400 p-1 cursor-pointer"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Stage */}
+                <div className="space-y-1">
+                  <label className={`text-[11px] font-semibold ${theme.textMain} block`}>Stage</label>
+                  <select
+                    value={importStage}
+                    onChange={(e) => setImportStage(e.target.value as PersonStage)}
+                    className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                  >
+                    {PERSON_STAGES.map((stg) => (
+                      <option key={stg} value={stg}>
+                        {stg}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               {/* Parsed Preview Table */}
               {parsedLeads.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                       <CheckCircleIcon className="w-4 h-4" />
-                      <span>Ready to import {parsedLeads.length} valid contacts</span>
+                      <span>{parsedLeads.length} contacts found</span>
                     </span>
-                    <span className={theme.textSubtle}>Previewing first {previewRows.length} rows</span>
+                    <span className={theme.textSubtle}>First {previewRows.length} shown</span>
                   </div>
 
                   <div className={`rounded-xl border ${theme.border} overflow-hidden`}>
                     <table className="w-full text-left text-xs">
-                      <thead className={`border-b ${theme.border} ${theme.bgSubtle} text-slate-500 font-bold uppercase text-[10px]`}>
+                      <thead className={`border-b ${theme.border} bg-slate-50 dark:bg-zinc-800/60 text-slate-500 dark:text-zinc-400 font-semibold text-[11px]`}>
                         <tr>
-                          <th className="py-2 px-3">Company / Business</th>
+                          <th className="py-2 px-3">Company</th>
                           <th className="py-2 px-3">Contact</th>
                           <th className="py-2 px-3">Phone</th>
                           <th className="py-2 px-3">Email</th>
-                          <th className="py-2 px-3">Niche • City</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
                         {previewRows.map((row, idx) => (
                           <tr key={idx} className={theme.hoverBg}>
-                            <td className={`py-2 px-3 font-semibold ${theme.textMain} truncate max-w-[120px]`}>
+                            <td className={`py-2 px-3 font-semibold ${theme.textMain} truncate max-w-[130px]`}>
                               {row.businessName || '—'}
                             </td>
-                            <td className={`py-2 px-3 ${theme.textMuted} truncate max-w-[100px]`}>
+                            <td className={`py-2 px-3 ${theme.textMuted} truncate max-w-[110px]`}>
                               {row.contactName || '—'}
                             </td>
                             <td className={`py-2 px-3 ${theme.textMain} truncate max-w-[110px]`}>
                               {row.phones[0] || '—'}
                             </td>
-                            <td className={`py-2 px-3 ${theme.textMain} truncate max-w-[120px]`}>
+                            <td className={`py-2 px-3 ${theme.textMain} truncate max-w-[130px]`}>
                               {row.emails[0] || '—'}
-                            </td>
-                            <td className={`py-2 px-3 ${theme.textMuted} truncate max-w-[110px]`}>
-                              {row.niche} &bull; {row.city}
                             </td>
                           </tr>
                         ))}
@@ -544,14 +504,12 @@ export function NewPersonModal({
             </div>
           )}
 
-          {/* ============================================================== */}
-          {/* TAB 2: MANUAL CONTACT ENTRY FORM                               */}
-          {/* ============================================================== */}
+          {/* TAB 2: MANUAL CONTACT ENTRY */}
           {activeTab === 'manual' && (
-            <form id="manual-contact-form" onSubmit={handleManualSubmit} className="space-y-4 animate-in fade-in">
-              {/* Company Name On Top (Prominent) */}
+            <form id="manual-contact-form" onSubmit={handleManualSubmit} className="space-y-3.5 animate-in fade-in">
+              {/* Company on top */}
               <div className="space-y-1">
-                <label className={`text-xs font-bold ${theme.textMain} block`}>
+                <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
                   Company / Business Name <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -559,36 +517,36 @@ export function NewPersonModal({
                   required
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="e.g. Skyline Dental Care, Apex Roofing Ltd."
-                  className={`w-full text-xs p-2.5 rounded-xl border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} font-semibold focus:outline-none focus:border-primary`}
+                  placeholder="e.g. Skyline Dental, Apex Roofing"
+                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} font-semibold focus:outline-none focus:border-primary`}
                 />
               </div>
 
-              {/* Person / Contact Name (Optional) */}
+              {/* Person Name */}
               <div className="space-y-1">
-                <label className={`text-xs font-medium ${theme.textMuted} block`}>
-                  Contact / Person Name (Optional if only Company is known)
+                <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
+                  Person Name (Optional)
                 </label>
                 <input
                   type="text"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  placeholder="e.g. Dr. Arthur Bell, Sarah Jenkins"
-                  className={`w-full text-xs p-2.5 rounded-xl border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                  placeholder="e.g. Dr. Arthur Bell"
+                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                 />
               </div>
 
-              {/* Multiple Phones */}
-              <div className="space-y-2">
+              {/* Phones */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className={`text-xs font-medium ${theme.textMuted}`}>Phone Number(s)</label>
+                  <label className={`text-[11px] font-medium ${theme.textMuted}`}>Phone(s)</label>
                   <button
                     type="button"
                     onClick={handleAddPhoneField}
                     className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
-                    <span>Add Another Phone</span>
+                    <span>Add Phone</span>
                   </button>
                 </div>
                 {phones.map((ph, idx) => (
@@ -597,14 +555,14 @@ export function NewPersonModal({
                       type="text"
                       value={ph}
                       onChange={(e) => handlePhoneChange(idx, e.target.value)}
-                      placeholder={idx === 0 ? 'Primary Phone (e.g. +1 555-0192)' : `Secondary Phone ${idx + 1}`}
+                      placeholder={idx === 0 ? 'Primary Phone' : `Phone ${idx + 1}`}
                       className={`flex-1 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                     />
                     {phones.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemovePhoneField(idx)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 cursor-pointer"
+                        className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -613,17 +571,17 @@ export function NewPersonModal({
                 ))}
               </div>
 
-              {/* Multiple Emails */}
-              <div className="space-y-2">
+              {/* Emails */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className={`text-xs font-medium ${theme.textMuted}`}>Email Address(es)</label>
+                  <label className={`text-[11px] font-medium ${theme.textMuted}`}>Email(s)</label>
                   <button
                     type="button"
                     onClick={handleAddEmailField}
                     className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
-                    <span>Add Another Email</span>
+                    <span>Add Email</span>
                   </button>
                 </div>
                 {emails.map((em, idx) => (
@@ -632,14 +590,14 @@ export function NewPersonModal({
                       type="email"
                       value={em}
                       onChange={(e) => handleEmailChange(idx, e.target.value)}
-                      placeholder={idx === 0 ? 'Primary Email (e.g. contact@business.com)' : `Secondary Email ${idx + 1}`}
+                      placeholder={idx === 0 ? 'Primary Email' : `Email ${idx + 1}`}
                       className={`flex-1 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                     />
                     {emails.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveEmailField(idx)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 cursor-pointer"
+                        className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -649,10 +607,10 @@ export function NewPersonModal({
               </div>
 
               {/* Niche & City & Stage Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {/* Niche */}
                 <div className="space-y-1">
-                  <label className={`text-xs font-medium ${theme.textMuted} block`}>Niche / Industry</label>
+                  <label className={`text-[11px] font-medium ${theme.textMuted} block`}>Niche</label>
                   {!isCustomManualNiche ? (
                     <select
                       value={manualNiche}
@@ -663,7 +621,7 @@ export function NewPersonModal({
                           setManualNiche(e.target.value);
                         }
                       }}
-                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                     >
                       {combinedNiches.map((n) => (
                         <option key={n} value={n}>
@@ -679,13 +637,13 @@ export function NewPersonModal({
                         required
                         value={customManualNiche}
                         onChange={(e) => setCustomManualNiche(e.target.value)}
-                        placeholder="Type custom niche..."
+                        placeholder="Niche..."
                         className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                       />
                       <button
                         type="button"
                         onClick={() => setIsCustomManualNiche(false)}
-                        className="text-xs text-slate-400 hover:text-slate-600 p-1"
+                        className="text-xs text-slate-400 p-1 cursor-pointer"
                       >
                         &times;
                       </button>
@@ -695,7 +653,7 @@ export function NewPersonModal({
 
                 {/* City */}
                 <div className="space-y-1">
-                  <label className={`text-xs font-medium ${theme.textMuted} block`}>City / Region</label>
+                  <label className={`text-[11px] font-medium ${theme.textMuted} block`}>City</label>
                   {!isCustomManualCity ? (
                     <select
                       value={manualCity}
@@ -706,7 +664,7 @@ export function NewPersonModal({
                           setManualCity(e.target.value);
                         }
                       }}
-                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                      className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                     >
                       {combinedCities.map((c) => (
                         <option key={c} value={c}>
@@ -722,13 +680,13 @@ export function NewPersonModal({
                         required
                         value={customManualCity}
                         onChange={(e) => setCustomManualCity(e.target.value)}
-                        placeholder="Type custom city..."
+                        placeholder="City..."
                         className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                       />
                       <button
                         type="button"
                         onClick={() => setIsCustomManualCity(false)}
-                        className="text-xs text-slate-400 hover:text-slate-600 p-1"
+                        className="text-xs text-slate-400 p-1 cursor-pointer"
                       >
                         &times;
                       </button>
@@ -738,11 +696,11 @@ export function NewPersonModal({
 
                 {/* Stage */}
                 <div className="space-y-1">
-                  <label className={`text-xs font-medium ${theme.textMuted} block`}>Initial Stage</label>
+                  <label className={`text-[11px] font-medium ${theme.textMuted} block`}>Stage</label>
                   <select
                     value={manualStage}
                     onChange={(e) => setManualStage(e.target.value as PersonStage)}
-                    className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                    className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                   >
                     {PERSON_STAGES.map((stg) => (
                       <option key={stg} value={stg}>
@@ -753,14 +711,14 @@ export function NewPersonModal({
                 </div>
               </div>
 
-              {/* Tags Section with Suggestions */}
-              <div className="space-y-2">
-                <label className={`text-xs font-medium ${theme.textMuted} block`}>Tags (No # symbol)</label>
+              {/* Tags */}
+              <div className="space-y-1.5">
+                <label className={`text-[11px] font-medium ${theme.textMuted} block`}>Tags</label>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {manualTags.map((t) => (
                     <span
                       key={t}
-                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain}`}
+                      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain}`}
                     >
                       <span>{t}</span>
                       <button
@@ -774,25 +732,7 @@ export function NewPersonModal({
                   ))}
                 </div>
 
-                {/* Suggestions */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Suggestions:</span>
-                  {allTags
-                    .filter((t) => !manualTags.includes(t))
-                    .slice(0, 6)
-                    .map((sug) => (
-                      <button
-                        key={sug}
-                        type="button"
-                        onClick={() => handleAddManualTag(sug)}
-                        className={`text-[11px] px-2 py-0.5 rounded-md border border-dashed ${theme.border} ${theme.hoverBg} ${theme.textMuted} hover:text-primary hover:border-primary cursor-pointer`}
-                      >
-                        + {sug}
-                      </button>
-                    ))}
-                </div>
-
-                <div className="flex items-center gap-1.5 pt-1">
+                <div className="flex items-center gap-1.5 pt-0.5">
                   <input
                     type="text"
                     value={manualTagInput}
@@ -803,7 +743,7 @@ export function NewPersonModal({
                         handleAddManualTag(manualTagInput);
                       }
                     }}
-                    placeholder="Type a new tag..."
+                    placeholder="Type tag & Enter..."
                     className={`flex-1 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                   />
                   <button
@@ -818,25 +758,25 @@ export function NewPersonModal({
 
               {/* Notes */}
               <div className="space-y-1">
-                <label className={`text-xs font-medium ${theme.textMuted} block`}>Overview Notes / Initial Comment</label>
+                <label className={`text-[11px] font-medium ${theme.textMuted} block`}>Notes</label>
                 <textarea
                   rows={2}
                   value={manualNotes}
                   onChange={(e) => setManualNotes(e.target.value)}
-                  placeholder="Add any initial notes or account context..."
-                  className={`w-full text-xs p-2.5 rounded-xl border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                  placeholder="Notes..."
+                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                 />
               </div>
             </form>
           )}
         </div>
 
-        {/* Modal Footer */}
-        <div className={`p-4 border-t ${theme.border} flex items-center justify-end gap-2.5 shrink-0 bg-slate-50/50 dark:bg-slate-900/50`}>
+        {/* Footer */}
+        <div className={`px-5 py-3 border-t ${theme.border} flex items-center justify-end gap-2 shrink-0`}>
           <button
             type="button"
             onClick={onClose}
-            className={`px-4 py-2 rounded-xl text-xs font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain} ${theme.hoverBg} cursor-pointer`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain} ${theme.hoverBg} cursor-pointer`}
           >
             Cancel
           </button>
@@ -846,23 +786,21 @@ export function NewPersonModal({
               type="button"
               disabled={parsedLeads.length === 0}
               onClick={handleExecuteImport}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-xs ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-all shadow-xs ${
                 parsedLeads.length > 0
                   ? 'bg-primary hover:bg-primary-600 cursor-pointer'
                   : 'bg-slate-400 opacity-50 cursor-not-allowed'
               }`}
             >
-              <ArrowUpTrayIcon className="w-4 h-4" />
-              <span>Import {parsedLeads.length > 0 ? `${parsedLeads.length} Leads` : 'Leads'}</span>
+              Import Leads
             </button>
           ) : (
             <button
               type="submit"
               form="manual-contact-form"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer shadow-xs"
+              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer shadow-xs"
             >
-              <UserPlusIcon className="w-4 h-4" />
-              <span>Save Contact</span>
+              Save Contact
             </button>
           )}
         </div>
