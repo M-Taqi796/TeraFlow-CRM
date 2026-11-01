@@ -1,6 +1,7 @@
 import { Bars3Icon, CheckCircleIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { ThemeToggle } from '../../ui/ThemeToggle';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useCRM } from '@/context/CRMContext';
 
 interface HeaderProps {
   activeTaskCount: number;
@@ -14,6 +15,7 @@ export function Header({
   onOpenMobileTasks,
 }: HeaderProps) {
   const { theme } = useThemeContext();
+  const { openNewLeadModal } = useCRM();
 
   return (
     <header
@@ -57,7 +59,11 @@ export function Header({
         <ThemeToggle />
 
         {/* New Lead button */}
-        <button className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs sm:text-sm font-medium transition-all shadow-sm">
+        <button
+          type="button"
+          onClick={openNewLeadModal}
+          className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs sm:text-sm font-medium transition-all shadow-sm cursor-pointer"
+        >
           <PlusIcon className="w-4 h-4 stroke-[2.5]" />
           <span className="hidden sm:inline">New Lead</span>
         </button>

@@ -137,14 +137,19 @@ export const DEFAULT_CITIES = [
 ];
 
 export const COMMON_TAGS = [
-  'Decision Maker',
-  'Gatekeeper Reached',
-  'High Priority',
-  'Cold Lead',
-  'Inbound Lead',
+  'VIP',
+  'Buyer',
+  'Seller',
+  'Investor',
+  'Urgent',
+  'FollowUp',
+  'Warm',
+  'Cold',
   'Referral',
-  'Website Lead',
-  'Busy',
-  'Call Back Later',
-  'Send Info',
+  'Inbound',
+  'Outbound',
+  'Qualified',
+  'Prospect',
+  'Partner',
+  'Contractor',
 ];

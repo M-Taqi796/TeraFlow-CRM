@@ -2,12 +2,12 @@
 
 import {
   MagnifyingGlassIcon,
-  PlusIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useCRM } from '@/context/CRMContext';
 import type { PersonStage } from '@/types/person.types';
-import { PERSON_STAGES, COMMON_TAGS, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
+import { PERSON_STAGES, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
 
 interface PeopleFiltersProps {
   searchValue: string;
@@ -20,7 +20,6 @@ interface PeopleFiltersProps {
   onSelectedNicheChange: (niche: string) => void;
   selectedCity: string;
   onSelectedCityChange: (city: string) => void;
-  onOpenNewPerson: () => void;
   onResetAllFilters: () => void;
   hasActiveFilters: boolean;
 }
@@ -36,18 +35,20 @@ export function PeopleFilters({
   onSelectedNicheChange,
   selectedCity,
   onSelectedCityChange,
-  onOpenNewPerson,
   onResetAllFilters,
   hasActiveFilters,
 }: PeopleFiltersProps) {
   const { theme } = useThemeContext();
+  const { allTags, customNiches, customCities } = useCRM();
+
+  const combinedNiches = Array.from(new Set([...DEFAULT_NICHES, ...customNiches]));
+  const combinedCities = Array.from(new Set([...DEFAULT_CITIES, ...customCities]));
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Top row: Search + Add Person */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
+      {/* Top row: Clean Search bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-lg">
           <MagnifyingGlassIcon
             className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${theme.textSubtle}`}
           />
@@ -67,19 +68,9 @@ export function PeopleFilters({
             </button>
           )}
         </div>
-
-        {/* Add Person Action */}
-        <button
-          type="button"
-          onClick={onOpenNewPerson}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-primary-600 transition-colors cursor-pointer shadow-xs shrink-0 self-end sm:self-auto"
-        >
-          <PlusIcon className="w-4 h-4" />
-          <span>Add Contact</span>
-        </button>
       </div>
 
-      {/* Filter Row */}
+      {/* Filter Row: Stages, Niches, Cities, Tags, and Reset */}
       <div className="flex items-center gap-2 flex-wrap text-xs">
         {/* Stage Filter */}
         <select
@@ -102,7 +93,7 @@ export function PeopleFilters({
           className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
         >
           <option value="">Niche: All</option>
-          {DEFAULT_NICHES.map((n) => (
+          {combinedNiches.map((n) => (
             <option key={n} value={n}>
               Niche: {n}
             </option>
@@ -116,23 +107,23 @@ export function PeopleFilters({
           className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
         >
           <option value="">City: All</option>
-          {DEFAULT_CITIES.map((c) => (
+          {combinedCities.map((c) => (
             <option key={c} value={c}>
               City: {c}
             </option>
           ))}
         </select>
 
-        {/* Tag Filter */}
+        {/* Tag Filter (clean, no #) */}
         <select
           value={selectedTag}
           onChange={(e) => onSelectedTagChange(e.target.value)}
           className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
         >
           <option value="">Tag: Any</option>
-          {COMMON_TAGS.map((tag) => (
+          {allTags.map((tag) => (
             <option key={tag} value={tag}>
-              Tag: #{tag}
+              Tag: {tag}
             </option>
           ))}
         </select>

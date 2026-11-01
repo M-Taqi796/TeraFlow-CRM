@@ -8,6 +8,8 @@ import { SEED_PEOPLE } from '@/data/people.data';
 import { SEED_MEETINGS } from '@/data/meetings.data';
 import { SEED_TASKS } from '@/data/tasks.data';
 
+import { COMMON_TAGS, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
+
 interface CRMContextType {
   people: Person[];
   meetings: Meeting[];
@@ -15,9 +17,19 @@ interface CRMContextType {
   activeTasks: Task[];
   completedTasks: Task[];
   navCounts: Record<string, number>;
+  allTags: string[];
+  onAddGlobalTag: (tag: string) => void;
+  customNiches: string[];
+  onAddCustomNiche: (niche: string) => void;
+  customCities: string[];
+  onAddCustomCity: (city: string) => void;
+  isNewLeadModalOpen: boolean;
+  openNewLeadModal: () => void;
+  closeNewLeadModal: () => void;
   onPersonStageChange: (id: string, stage: PersonStage) => void;
   onUpdatePerson: (updated: Person) => void;
   onCreatePerson: (newPerson: Person) => void;
+  onBulkCreatePeople: (newPeople: Person[]) => void;
   onDeletePerson: (id: string) => void;
   onBulkTag: (ids: string[], tag: string) => void;
   onBulkStage: (ids: string[], stage: PersonStage) => void;
@@ -33,6 +45,40 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const [people, setPeople]     = useState<Person[]>(SEED_PEOPLE);
   const [meetings, setMeetings] = useState<Meeting[]>(SEED_MEETINGS);
   const [tasks, setTasks]       = useState<Task[]>(SEED_TASKS);
+
+  // New Lead Modal
+  const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
+  const openNewLeadModal = () => setIsNewLeadModalOpen(true);
+  const closeNewLeadModal = () => setIsNewLeadModalOpen(false);
+
+  // Global tag registry (starts with COMMON_TAGS + seed tags)
+  const [allTags, setAllTags] = useState<string[]>(() => {
+    const seedTags = SEED_PEOPLE.flatMap((p) => p.tags);
+    const set = new Set([...COMMON_TAGS, ...seedTags]);
+    return Array.from(set);
+  });
+
+  const handleAddGlobalTag = (tag: string) => {
+    const clean = tag.trim().replace(/^#/, '');
+    if (!clean) return;
+    setAllTags((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+  };
+
+  // Custom niches and cities
+  const [customNiches, setCustomNiches] = useState<string[]>([]);
+  const [customCities, setCustomCities] = useState<string[]>([]);
+
+  const handleAddCustomNiche = (niche: string) => {
+    const clean = niche.trim();
+    if (!clean) return;
+    setCustomNiches((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+  };
+
+  const handleAddCustomCity = (city: string) => {
+    const clean = city.trim();
+    if (!clean) return;
+    setCustomCities((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+  };
 
   const activeTasks    = useMemo(() => tasks.filter((t) => t.status === 'TODO'), [tasks]);
   const completedTasks = useMemo(() => tasks.filter((t) => t.status === 'COMPLETED'), [tasks]);
@@ -71,6 +117,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
   const handleCreatePerson = (newPerson: Person) => {
     setPeople((prev) => [newPerson, ...prev]);
+    // Also register any new tags
+    newPerson.tags.forEach(handleAddGlobalTag);
+  };
+
+  const handleBulkCreatePeople = (newPeople: Person[]) => {
+    setPeople((prev) => [...newPeople, ...prev]);
+    newPeople.forEach((p) => p.tags.forEach(handleAddGlobalTag));
   };
 
   const handleDeletePerson = (id: string) => {
@@ -78,8 +131,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleBulkTag = (ids: string[], tag: string) => {
-    const cleanTag = tag.trim();
+    const cleanTag = tag.trim().replace(/^#/, '');
     if (!cleanTag) return;
+    handleAddGlobalTag(cleanTag);
     setPeople((prev) =>
       prev.map((p) => {
         if (!ids.includes(p.id)) return p;
@@ -88,7 +142,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
           id: `act-${Date.now()}-${p.id}`,
           type: 'tag_added' as const,
           title: 'Tag Added',
-          description: `Added tag #${cleanTag} via bulk actions.`,
+          description: `Added tag "${cleanTag}" via bulk actions.`,
           timestamp: new Date().toISOString(),
           relativeTime: 'Just now',
           author: 'Muhammad Taqi',
@@ -155,9 +209,19 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         activeTasks,
         completedTasks,
         navCounts,
+        allTags,
+        onAddGlobalTag: handleAddGlobalTag,
+        customNiches,
+        onAddCustomNiche: handleAddCustomNiche,
+        customCities,
+        onAddCustomCity: handleAddCustomCity,
+        isNewLeadModalOpen,
+        openNewLeadModal,
+        closeNewLeadModal,
         onPersonStageChange: handlePersonStageChange,
         onUpdatePerson: handleUpdatePerson,
         onCreatePerson: handleCreatePerson,
+        onBulkCreatePeople: handleBulkCreatePeople,
         onDeletePerson: handleDeletePerson,
         onBulkTag: handleBulkTag,
         onBulkStage: handleBulkStage,

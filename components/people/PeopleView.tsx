@@ -9,7 +9,6 @@ import { PeopleFilters } from './PeopleFilters/PeopleFilters';
 import { PeopleTable } from './PeopleTable/PeopleTable';
 import { BulkActionBar } from './BulkActionBar/BulkActionBar';
 import { PersonDetailDrawer } from './PersonDetailDrawer/PersonDetailDrawer';
-import { NewPersonModal } from './NewPersonModal/NewPersonModal';
 
 export function PeopleView() {
   const { theme } = useThemeContext();
@@ -34,7 +33,6 @@ export function PeopleView() {
 
   const [selectedIds, setSelectedIds]             = useState<string[]>([]);
   const [activePerson, setActivePerson]           = useState<Person | null>(null);
-  const [isNewPersonOpen, setIsNewPersonOpen]     = useState(false);
 
   // Smart List Dynamic Counts
   const smartListCounts = useMemo(() => {
@@ -233,7 +231,6 @@ export function PeopleView() {
         onSelectedNicheChange={setSelectedNiche}
         selectedCity={selectedCity}
         onSelectedCityChange={setSelectedCity}
-        onOpenNewPerson={() => setIsNewPersonOpen(true)}
         onResetAllFilters={handleResetAllFilters}
         hasActiveFilters={hasActiveFilters}
       />
@@ -285,16 +282,6 @@ export function PeopleView() {
           }}
         />
       )}
-
-      {/* New Contact Modal */}
-      <NewPersonModal
-        isOpen={isNewPersonOpen}
-        onClose={() => setIsNewPersonOpen(false)}
-        onCreate={(p) => {
-          onCreatePerson(p);
-          setActivePerson(p);
-        }}
-      />
     </div>
   );
 }

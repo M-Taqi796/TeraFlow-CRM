@@ -9,6 +9,7 @@ import { Taskbar } from '../Taskbar';
 import { Backdrop } from '../../ui/Backdrop';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
+import { NewPersonModal } from '@/components/people/NewPersonModal/NewPersonModal';
 
 interface AppShellProps {
   children: ReactNode;
@@ -100,6 +101,14 @@ export function AppShell({
         onExpandedChange={setIsTaskbarExpanded}
         isMobileOpen={isMobileTasksOpen}
         onMobileClose={() => setIsMobileTasksOpen(false)}
+      />
+
+      {/* Global New Lead / Add Contact Modal */}
+      <NewPersonModal
+        isOpen={crm.isNewLeadModalOpen}
+        onClose={crm.closeNewLeadModal}
+        onCreate={(lead) => crm.onCreatePerson(lead)}
+        onBulkCreate={(leads) => crm.onBulkCreatePeople(leads)}
       />
     </div>
   );

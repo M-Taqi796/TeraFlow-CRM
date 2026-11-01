@@ -17,6 +17,7 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useCRM } from '@/context/CRMContext';
 import type {
   Person,
   PersonStage,
@@ -24,7 +25,7 @@ import type {
   ContactFieldType,
   ContactInfoField,
 } from '@/types/person.types';
-import { PERSON_STAGES, COMMON_TAGS } from '@/types/person.types';
+import { PERSON_STAGES, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
 
 interface PersonDetailDrawerProps {
   person: Person | null;
@@ -42,6 +43,14 @@ export function PersonDetailDrawer({
   onDeletePerson,
 }: PersonDetailDrawerProps) {
   const { theme, isDarkMode } = useThemeContext();
+  const {
+    allTags,
+    onAddGlobalTag,
+    customNiches,
+    onAddCustomNiche,
+    customCities,
+    onAddCustomCity,
+  } = useCRM();
 
   // Mode: none, call, email, note
   const [actionMode, setActionMode] = useState<ActionMode>('none');
@@ -79,8 +88,44 @@ export function PersonDetailDrawer({
   const [newFieldValue, setNewFieldValue] = useState('');
   const [newFieldLabel, setNewFieldLabel] = useState('');
 
+  // Inline Contact Info Editing states
+  const [editingPhoneIdx, setEditingPhoneIdx] = useState<number | null>(null);
+  const [editingPhoneVal, setEditingPhoneVal] = useState('');
+
+  const [editingEmailIdx, setEditingEmailIdx] = useState<number | null>(null);
+  const [editingEmailVal, setEditingEmailVal] = useState('');
+
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editingFieldLabel, setEditingFieldLabel] = useState('');
+  const [editingFieldVal, setEditingFieldVal] = useState('');
+
+  // Niche & City Editing state
+  const [isEditingNicheCity, setIsEditingNicheCity] = useState(false);
+  const [editNiche, setEditNiche] = useState(person?.niche || 'Dentists');
+  const [isCustomEditNiche, setIsCustomEditNiche] = useState(false);
+  const [customEditNiche, setCustomEditNiche] = useState('');
+  const [editCity, setEditCity] = useState(person?.city || 'New York');
+  const [isCustomEditCity, setIsCustomEditCity] = useState(false);
+  const [customEditCity, setCustomEditCity] = useState('');
+
+  // Combined Niches & Cities
+  const combinedNiches = useMemo(
+    () => Array.from(new Set([...DEFAULT_NICHES, ...customNiches])),
+    [customNiches]
+  );
+  const combinedCities = useMemo(
+    () => Array.from(new Set([...DEFAULT_CITIES, ...customCities])),
+    [customCities]
+  );
+
   // Add Tag input
   const [newTagInput, setNewTagInput] = useState('');
+
+  // Tag Suggestions: all tags in DB that are not assigned to this person
+  const suggestedTags = useMemo(() => {
+    if (!person) return [];
+    return allTags.filter((t) => !person.tags.includes(t));
+  }, [allTags, person?.tags]);
 
   // Timeline Filter (multi-select checkboxes)
   const [timelineFilterOpen, setTimelineFilterOpen] = useState(false);
@@ -311,7 +356,7 @@ export function PersonDetailDrawer({
     const act = {
       id: `act-${Date.now()}`,
       type: 'contact_info' as const,
-      title: `Removed Contact Field`,
+      title: 'Removed Contact Field',
       description: field ? `${field.label}: ${field.value}` : 'Contact field removed',
       timestamp: new Date().toISOString(),
       relativeTime: 'Just now',
@@ -324,15 +369,178 @@ export function PersonDetailDrawer({
     });
   };
 
-  // 8. Add Tag
+  // 7a. Edit & Save Phone
+  const handleSavePhoneEdit = (idx: number) => {
+    const newVal = editingPhoneVal.trim();
+    if (!newVal) return;
+    const oldVal = person.phones[idx];
+    const updatedPhones = [...person.phones];
+    updatedPhones[idx] = newVal;
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'contact_info' as const,
+      title: 'Phone Updated',
+      description: `Phone changed from "${oldVal}" to "${newVal}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      phones: updatedPhones,
+      activities: [act, ...(person.activities || [])],
+    });
+    setEditingPhoneIdx(null);
+  };
+
+  const handleDeletePhone = (idx: number) => {
+    if (person.phones.length <= 1) {
+      alert('A contact must have at least one phone field (it can be empty).');
+      return;
+    }
+    const oldVal = person.phones[idx];
+    const updatedPhones = person.phones.filter((_, i) => i !== idx);
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'contact_info' as const,
+      title: 'Phone Removed',
+      description: `Removed phone "${oldVal}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      phones: updatedPhones,
+      activities: [act, ...(person.activities || [])],
+    });
+  };
+
+  // 7b. Edit & Save Email
+  const handleSaveEmailEdit = (idx: number) => {
+    const newVal = editingEmailVal.trim();
+    if (!newVal) return;
+    const oldVal = person.emails[idx];
+    const updatedEmails = [...person.emails];
+    updatedEmails[idx] = newVal;
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'contact_info' as const,
+      title: 'Email Updated',
+      description: `Email changed from "${oldVal}" to "${newVal}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      emails: updatedEmails,
+      activities: [act, ...(person.activities || [])],
+    });
+    setEditingEmailIdx(null);
+  };
+
+  const handleDeleteEmail = (idx: number) => {
+    if (person.emails.length <= 1) {
+      alert('A contact must have at least one email field (it can be empty).');
+      return;
+    }
+    const oldVal = person.emails[idx];
+    const updatedEmails = person.emails.filter((_, i) => i !== idx);
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'contact_info' as const,
+      title: 'Email Removed',
+      description: `Removed email "${oldVal}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      emails: updatedEmails,
+      activities: [act, ...(person.activities || [])],
+    });
+  };
+
+  // 7c. Edit & Save Custom Field
+  const handleSaveCustomFieldEdit = (fieldId: string) => {
+    const newVal = editingFieldVal.trim();
+    const newLabel = editingFieldLabel.trim();
+    if (!newVal) return;
+
+    const updatedFields = (person.contactFields || []).map((f) =>
+      f.id === fieldId ? { ...f, label: newLabel || f.label, value: newVal } : f
+    );
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'contact_info' as const,
+      title: 'Contact Field Updated',
+      description: `Updated ${newLabel || 'field'} to "${newVal}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      contactFields: updatedFields,
+      activities: [act, ...(person.activities || [])],
+    });
+    setEditingFieldId(null);
+  };
+
+  // 7d. Edit & Save Niche & City
+  const handleSaveNicheCity = () => {
+    const effectiveNiche = isCustomEditNiche && customEditNiche.trim()
+      ? customEditNiche.trim()
+      : editNiche;
+    const effectiveCity = isCustomEditCity && customEditCity.trim()
+      ? customEditCity.trim()
+      : editCity;
+
+    if (isCustomEditNiche && customEditNiche.trim()) onAddCustomNiche(customEditNiche.trim());
+    if (isCustomEditCity && customEditCity.trim()) onAddCustomCity(customEditCity.trim());
+
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'note' as const,
+      title: 'Niche & Location Updated',
+      description: `Niche set to "${effectiveNiche}", City set to "${effectiveCity}".`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
+
+    onUpdatePerson({
+      ...person,
+      niche: effectiveNiche,
+      city: effectiveCity,
+      activities: [act, ...(person.activities || [])],
+    });
+    setIsEditingNicheCity(false);
+  };
+
+  // 8. Add Tag (No # symbol, single word)
   const handleAddTag = (tagToAdd: string) => {
-    const clean = tagToAdd.trim();
+    const clean = tagToAdd.trim().replace(/^#/, '');
     if (!clean || person.tags.includes(clean)) return;
+    onAddGlobalTag(clean);
+
     const act = {
       id: `act-${Date.now()}`,
       type: 'tag_added' as const,
-      title: `Tag Added (#${clean})`,
-      description: `Added #${clean}`,
+      title: `Tag Added ("${clean}")`,
+      description: `Added "${clean}"`,
       timestamp: new Date().toISOString(),
       relativeTime: 'Just now',
       author: 'Muhammad Taqi',
@@ -345,20 +553,21 @@ export function PersonDetailDrawer({
     setNewTagInput('');
   };
 
-  // 9. Remove Tag
+  // 9. Remove Tag (No # symbol)
   const handleRemoveTag = (tagToRemove: string) => {
+    const clean = tagToRemove.replace(/^#/, '');
     const act = {
       id: `act-${Date.now()}`,
       type: 'tag_removed' as const,
-      title: `Tag Removed (#${tagToRemove})`,
-      description: `Removed #${tagToRemove}`,
+      title: `Tag Removed ("${clean}")`,
+      description: `Removed "${clean}"`,
       timestamp: new Date().toISOString(),
       relativeTime: 'Just now',
       author: 'Muhammad Taqi',
     };
     onUpdatePerson({
       ...person,
-      tags: person.tags.filter((t) => t !== tagToRemove),
+      tags: person.tags.filter((t) => t.replace(/^#/, '') !== clean),
       activities: [act, ...(person.activities || [])],
     });
   };
@@ -610,93 +819,279 @@ export function PersonDetailDrawer({
                 </form>
               )}
 
-              {/* Displayed Fields (Only Added / Non-Empty Fields Shown) */}
+              {/* Displayed Fields with Inline Edit & Delete */}
               <div className="space-y-2 text-xs">
                 {/* Primary & Additional Phones */}
                 {person.phones.map((ph, idx) => (
-                  <div key={`phone-${idx}`} className={`flex items-center justify-between p-2 rounded-lg border ${theme.border} ${theme.bgPanel}`}>
-                    <div className="flex items-center gap-2 truncate">
-                      <PhoneIcon className="w-4 h-4 text-blue-500 shrink-0" />
-                      <div className="truncate">
-                        <span className={`text-[10px] uppercase font-bold text-slate-400 block leading-tight`}>
-                          {idx === 0 ? 'Primary Phone' : `Phone ${idx + 1}`}
-                        </span>
-                        <a href={`tel:${ph}`} className={`font-semibold ${theme.textMain} hover:text-primary`}>
-                          {ph}
-                        </a>
+                  <div key={`phone-${idx}`} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                    {editingPhoneIdx === idx ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={editingPhoneVal}
+                          onChange={(e) => setEditingPhoneVal(e.target.value)}
+                          placeholder="Enter phone number..."
+                          className={`flex-1 text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSavePhoneEdit(idx)}
+                          className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                          title="Save phone"
+                        >
+                          <CheckIcon className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingPhoneIdx(null)}
+                          className={`p-1 rounded-md ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
+                          title="Cancel"
+                        >
+                          <XMarkIcon className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 truncate">
+                          <PhoneIcon className="w-4 h-4 text-blue-500 shrink-0" />
+                          <div className="truncate">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">
+                              {idx === 0 ? 'Primary Phone' : `Phone ${idx + 1}`}
+                            </span>
+                            <a href={`tel:${ph}`} className={`font-semibold ${theme.textMain} hover:text-primary`}>
+                              {ph || <span className="italic text-slate-400 font-normal">No number added</span>}
+                            </a>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPhoneIdx(idx);
+                              setEditingPhoneVal(ph);
+                            }}
+                            className="p-1 text-slate-400 hover:text-primary cursor-pointer rounded"
+                            title="Edit phone"
+                          >
+                            <PencilSquareIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePhone(idx)}
+                            className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded"
+                            title="Delete phone"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
 
                 {/* Primary & Additional Emails */}
                 {person.emails.map((em, idx) => (
-                  <div key={`email-${idx}`} className={`flex items-center justify-between p-2 rounded-lg border ${theme.border} ${theme.bgPanel}`}>
-                    <div className="flex items-center gap-2 truncate">
-                      <EnvelopeIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                      <div className="truncate">
-                        <span className={`text-[10px] uppercase font-bold text-slate-400 block leading-tight`}>
-                          {idx === 0 ? 'Primary Email' : `Email ${idx + 1}`}
-                        </span>
-                        <a href={`mailto:${em}`} className={`font-semibold ${theme.textMain} hover:text-primary truncate block`}>
-                          {em}
-                        </a>
+                  <div key={`email-${idx}`} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                    {editingEmailIdx === idx ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="email"
+                          value={editingEmailVal}
+                          onChange={(e) => setEditingEmailVal(e.target.value)}
+                          placeholder="Enter email address..."
+                          className={`flex-1 text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEmailEdit(idx)}
+                          className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                          title="Save email"
+                        >
+                          <CheckIcon className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingEmailIdx(null)}
+                          className={`p-1 rounded-md ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
+                          title="Cancel"
+                        >
+                          <XMarkIcon className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 truncate">
+                          <EnvelopeIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                          <div className="truncate">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">
+                              {idx === 0 ? 'Primary Email' : `Email ${idx + 1}`}
+                            </span>
+                            <a href={`mailto:${em}`} className={`font-semibold ${theme.textMain} hover:text-primary truncate block`}>
+                              {em || <span className="italic text-slate-400 font-normal">No email added</span>}
+                            </a>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingEmailIdx(idx);
+                              setEditingEmailVal(em);
+                            }}
+                            className="p-1 text-slate-400 hover:text-primary cursor-pointer rounded"
+                            title="Edit email"
+                          >
+                            <PencilSquareIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEmail(idx)}
+                            className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded"
+                            title="Delete email"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
 
                 {/* Dynamic Contact Fields (Website, Social, Address, etc.) */}
                 {(person.contactFields || []).map((cf) => (
-                  <div key={cf.id} className={`flex items-center justify-between p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
-                    <div className="flex items-center gap-2 truncate">
-                      <div className="w-5 flex justify-center shrink-0">
-                        {getFieldIcon(cf.type)}
+                  <div key={cf.id} className={`p-2 rounded-lg border ${theme.border} ${theme.bgPanel} group`}>
+                    {editingFieldId === cf.id ? (
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={editingFieldLabel}
+                          onChange={(e) => setEditingFieldLabel(e.target.value)}
+                          placeholder="Field label..."
+                          className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={editingFieldVal}
+                            onChange={(e) => setEditingFieldVal(e.target.value)}
+                            placeholder="Field value..."
+                            className={`flex-1 text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveCustomFieldEdit(cf.id)}
+                            className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                            title="Save field"
+                          >
+                            <CheckIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingFieldId(null)}
+                            className={`p-1 rounded-md ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
+                            title="Cancel"
+                          >
+                            <XMarkIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="truncate">
-                        <span className={`text-[10px] uppercase font-bold text-slate-400 block leading-tight`}>
-                          {cf.label}
-                        </span>
-                        <span className={`font-semibold ${theme.textMain} truncate block`}>
-                          {cf.value}
-                        </span>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 truncate">
+                          <div className="w-5 flex justify-center shrink-0">
+                            {getFieldIcon(cf.type)}
+                          </div>
+                          <div className="truncate">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">
+                              {cf.label}
+                            </span>
+                            <span className={`font-semibold ${theme.textMain} truncate block`}>
+                              {cf.value}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFieldId(cf.id);
+                              setEditingFieldLabel(cf.label);
+                              setEditingFieldVal(cf.value);
+                            }}
+                            className="p-1 text-slate-400 hover:text-primary cursor-pointer rounded"
+                            title="Edit field"
+                          >
+                            <PencilSquareIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveContactField(cf.id)}
+                            className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer rounded"
+                            title="Remove field"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveContactField(cf.id)}
-                      className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity p-1 cursor-pointer"
-                      title="Remove field"
-                    >
-                      <XMarkIcon className="w-3.5 h-3.5" />
-                    </button>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Tags Box */}
-            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-2.5`}>
-              <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
+            {/* Tags Box: 1- Assigned Tags, 2- Suggestions, 3- Add New Tag */}
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-3`}>
+              <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain} block`}>
                 Tags
               </span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {person.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain}`}
-                  >
-                    <span>#{tag}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:opacity-75 cursor-pointer ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+
+              {/* 1. Assigned Tags */}
+              <div className="flex items-center gap-1.5 flex-wrap min-h-[24px]">
+                {person.tags.length === 0 ? (
+                  <span className="text-xs text-slate-400 italic">No tags assigned yet.</span>
+                ) : (
+                  person.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain}`}
                     >
-                      &times;
-                    </button>
-                  </span>
-                ))}
+                      <span>{tag.replace(/^#/, '')}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-rose-500 cursor-pointer ml-1 text-slate-400"
+                        title="Remove tag"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))
+                )}
               </div>
+
+              {/* 2. Suggestions (all other tags in DB) */}
+              {suggestedTags.length > 0 && (
+                <div className="space-y-1.5 pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Suggestions (Click to add)
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {suggestedTags.slice(0, 10).map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleAddTag(tag)}
+                        className={`text-[11px] px-2 py-0.5 rounded-md border border-dashed ${theme.border} ${theme.hoverBg} ${theme.textMuted} hover:text-primary hover:border-primary transition-colors cursor-pointer flex items-center gap-1`}
+                      >
+                        <PlusIcon className="w-3 h-3" />
+                        <span>{tag}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Option to Add a New Tag */}
               <div className="flex items-center gap-1.5 pt-1">
                 <input
                   type="text"
@@ -708,8 +1103,8 @@ export function PersonDetailDrawer({
                       handleAddTag(newTagInput);
                     }
                   }}
-                  placeholder="Add a tag..."
-                  className={`text-xs px-2.5 py-1.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} w-full`}
+                  placeholder="Add a new tag (e.g. VIP, Buyer)..."
+                  className={`text-xs px-2.5 py-1.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} w-full focus:outline-none focus:border-primary`}
                 />
                 <button
                   type="button"
@@ -721,23 +1116,149 @@ export function PersonDetailDrawer({
               </div>
             </div>
 
-            {/* Niche & Location */}
-            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-2 text-xs`}>
-              <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
-                Niche & Location
-              </span>
-              <div className="flex items-center justify-between pt-1">
-                <span className={theme.textSubtle}>Niche</span>
-                <span className={`font-semibold ${theme.textMain}`}>{person.niche || 'General'}</span>
-              </div>
+            {/* Niche & Location (Editable) */}
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgSubtle} space-y-2.5 text-xs`}>
               <div className="flex items-center justify-between">
-                <span className={theme.textSubtle}>City / Region</span>
-                <span className={`font-semibold ${theme.textMain}`}>{person.city || 'United States'}</span>
+                <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
+                  Niche & Location
+                </span>
+                {!isEditingNicheCity && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingNicheCity(true);
+                      setEditNiche(person.niche || 'Dentists');
+                      setEditCity(person.city || 'New York');
+                      setIsCustomEditNiche(false);
+                      setIsCustomEditCity(false);
+                    }}
+                    className={`p-1 rounded-md text-slate-400 hover:text-primary cursor-pointer`}
+                    title="Edit Niche and Location"
+                  >
+                    <PencilSquareIcon className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-              <div className="flex items-center justify-between">
-                <span className={theme.textSubtle}>Created Date</span>
-                <span className={theme.textMuted}>{person.createdAt}</span>
-              </div>
+
+              {isEditingNicheCity ? (
+                <div className="space-y-3 pt-1 animate-in fade-in">
+                  {/* Edit Niche */}
+                  <div className="space-y-1">
+                    <label className={`text-[11px] font-medium ${theme.textSubtle}`}>Niche</label>
+                    {!isCustomEditNiche ? (
+                      <select
+                        value={editNiche}
+                        onChange={(e) => {
+                          if (e.target.value === '__add_new__') {
+                            setIsCustomEditNiche(true);
+                          } else {
+                            setEditNiche(e.target.value);
+                          }
+                        }}
+                        className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                      >
+                        {combinedNiches.map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                          </option>
+                        ))}
+                        <option value="__add_new__">+ Add New Niche...</option>
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={customEditNiche}
+                          onChange={(e) => setCustomEditNiche(e.target.value)}
+                          placeholder="Type custom niche..."
+                          className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsCustomEditNiche(false)}
+                          className="text-xs text-slate-400 p-1"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Edit City */}
+                  <div className="space-y-1">
+                    <label className={`text-[11px] font-medium ${theme.textSubtle}`}>City / Location</label>
+                    {!isCustomEditCity ? (
+                      <select
+                        value={editCity}
+                        onChange={(e) => {
+                          if (e.target.value === '__add_new__') {
+                            setIsCustomEditCity(true);
+                          } else {
+                            setEditCity(e.target.value);
+                          }
+                        }}
+                        className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                      >
+                        {combinedCities.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                        <option value="__add_new__">+ Add New City...</option>
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={customEditCity}
+                          onChange={(e) => setCustomEditCity(e.target.value)}
+                          placeholder="Type custom city..."
+                          className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsCustomEditCity(false)}
+                          className="text-xs text-slate-400 p-1"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingNicheCity(false)}
+                      className={`px-2.5 py-1 text-xs ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveNicheCity}
+                      className="px-3 py-1 rounded-md text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className={theme.textSubtle}>Niche</span>
+                    <span className={`font-semibold ${theme.textMain}`}>{person.niche || 'General'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={theme.textSubtle}>City / Region</span>
+                    <span className={`font-semibold ${theme.textMain}`}>{person.city || 'United States'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={theme.textSubtle}>Created Date</span>
+                    <span className={theme.textMuted}>{person.createdAt}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Overview Notes Box: High-Contrast, Clean, Editable & Saveable */}
