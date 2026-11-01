@@ -18,7 +18,7 @@ export function SmartListsBar({
   const { theme } = useThemeContext();
 
   return (
-    <div className={`flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b ${theme.border}`}>
+    <div className={`flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b ${theme.border}`}>
       {SMART_LISTS.map((list) => {
         const isSelected = selectedList === list.id;
         const count = counts[list.id] ?? 0;
@@ -26,9 +26,10 @@ export function SmartListsBar({
         return (
           <button
             key={list.id}
+            type="button"
             onClick={() => onSelectList(list.id)}
             title={list.description}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-all border-b-2 cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-all border-b-2 cursor-pointer ${
               isSelected
                 ? 'border-primary text-primary bg-primary/5'
                 : `border-transparent ${theme.textMuted} hover:${theme.textMain} hover:bg-black/5 dark:hover:bg-white/5`

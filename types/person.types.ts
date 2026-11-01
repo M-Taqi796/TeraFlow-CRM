@@ -1,99 +1,150 @@
 export type PersonStage =
-  | 'Lead'
+  | 'New Leads'
   | 'Contacted'
-  | 'Qualified'
-  | 'Hot Prospect'
-  | 'Negotiation'
-  | 'Past Client'
-  | 'Trash';
+  | 'Booked'
+  | 'Closed'
+  | 'Follow-Up'
+  | 'Denied'
+  | 'Past Clients';
 
-export type PersonPriority = 'Low' | 'Medium' | 'High';
-
-export type ActivityType = 'call' | 'email' | 'text' | 'note' | 'stage_change' | 'tag_added';
+export type ActivityType =
+  | 'call'
+  | 'email'
+  | 'stage_change'
+  | 'tag_added'
+  | 'tag_removed'
+  | 'note'
+  | 'contact_info'
+  | 'name_change';
 
 export interface PersonActivity {
   id: string;
   type: ActivityType;
   title: string;
   description?: string;
-  timestamp: string;
-  relativeTime: string;
+  callStatus?: string; // 'Answered' | 'Not answered' | 'Call failed' | 'Busy' | 'Left Voicemail' | 'Wrong Number'
+  emailType?: 'Sent' | 'Reply';
+  emailSubject?: string;
+  timestamp: string; // ISO string
+  relativeTime?: string;
   author: string;
 }
 
 export interface LastActivity {
-  type: 'call' | 'email' | 'text' | 'note';
+  type: 'call' | 'email' | 'note' | 'stage_change';
   summary: string;
   timestamp: string;
   relativeTime: string;
 }
 
+export type ContactFieldType =
+  | 'phone'
+  | 'email'
+  | 'linkedin'
+  | 'facebook'
+  | 'instagram'
+  | 'website'
+  | 'address';
+
+export interface ContactInfoField {
+  id: string;
+  type: ContactFieldType;
+  label: string;
+  value: string;
+}
+
 export interface Person {
   id: string;
   businessName: string;
-  firstName: string;
-  lastName: string;
-  contactName: string;
-  phone: string;
-  email: string;
-  stage: PersonStage;
-  priority: PersonPriority;
+  contactName?: string;
+  firstName?: string;
+  lastName?: string;
+  phones: string[];
+  emails: string[];
+  contactFields: ContactInfoField[];
   tags: string[];
-  source: string;
-  dealValue: number; // Estimated value / budget in USD
-  assignedTo: string;
-  location: string;
+  niche: string; // e.g. "Dentists", "Realtors", "Roofing"
+  city: string;  // e.g. "New York", "Chicago", "Miami"
+  stage: PersonStage;
   notes: string;
   createdAt: string;
-  lastActivity: LastActivity;
+  lastActivity?: LastActivity;
   activities: PersonActivity[];
 }
 
 export type SmartListId =
   | 'all'
   | 'new_leads'
-  | 'recently_active'
-  | 'hot_prospects'
-  | 'nurture'
-  | 'unassigned';
+  | 'contacted'
+  | 'booked'
+  | 'closed'
+  | 'follow_up'
+  | 'denied'
+  | 'past_clients';
 
 export interface SmartListDef {
   id: SmartListId;
   label: string;
   description: string;
+  stageMatch?: PersonStage;
 }
 
 export const SMART_LISTS: SmartListDef[] = [
-  { id: 'all', label: 'All People', description: 'Complete database view' },
-  { id: 'new_leads', label: 'New Leads', description: 'Fresh unworked contacts (< 7 days)' },
-  { id: 'recently_active', label: 'Recently Active', description: 'Activity in the last 48 hours' },
-  { id: 'hot_prospects', label: 'Hot Prospects', description: 'High-priority & near close deals' },
-  { id: 'nurture', label: 'Nurture / Follow-Up', description: 'No communication in > 14 days' },
-  { id: 'unassigned', label: 'Pond / Unassigned', description: 'Shared pool of unassigned contacts' },
+  { id: 'all',          label: 'All People',   description: 'All contacts in database' },
+  { id: 'new_leads',    label: 'New Leads',    description: 'Not contacted once', stageMatch: 'New Leads' },
+  { id: 'contacted',    label: 'Contacted',    description: 'Contacted at least once via email or phone', stageMatch: 'Contacted' },
+  { id: 'booked',       label: 'Booked',       description: 'Agreed for a meeting', stageMatch: 'Booked' },
+  { id: 'closed',       label: 'Closed',       description: 'Agreed to work with us', stageMatch: 'Closed' },
+  { id: 'follow_up',    label: 'Follow-Up',    description: 'Asked to call back or follow up later', stageMatch: 'Follow-Up' },
+  { id: 'denied',       label: 'Denied',       description: 'Denied to work with us', stageMatch: 'Denied' },
+  { id: 'past_clients', label: 'Past Clients', description: 'Past clients and accounts', stageMatch: 'Past Clients' },
 ];
 
 export const PERSON_STAGES: PersonStage[] = [
-  'Lead',
+  'New Leads',
   'Contacted',
-  'Qualified',
-  'Hot Prospect',
-  'Negotiation',
-  'Past Client',
-  'Trash',
+  'Booked',
+  'Closed',
+  'Follow-Up',
+  'Denied',
+  'Past Clients',
 ];
 
-export const COMMON_FUB_TAGS = [
-  'VIP',
-  'Buyer',
-  'Seller',
-  'Investor',
-  'High Intent',
-  'Website Lead',
-  'Meta Ads',
-  'Google Ads',
+export const DEFAULT_NICHES = [
+  'Dentists',
+  'Realtors',
+  'Roofing',
+  'Solar',
+  'Lawyers',
+  'HVAC',
+  'Plumbing',
+  'Accounting',
+  'Fitness & Gyms',
+  'Med Spa',
+];
+
+export const DEFAULT_CITIES = [
+  'New York',
+  'Los Angeles',
+  'Chicago',
+  'Houston',
+  'Miami',
+  'Austin',
+  'Dallas',
+  'Phoenix',
+  'Atlanta',
+  'Denver',
+];
+
+export const COMMON_TAGS = [
+  'Decision Maker',
+  'Gatekeeper Reached',
+  'High Priority',
   'Cold Lead',
+  'Inbound Lead',
   'Referral',
-  'Open House',
-  'Relocation',
-  'Pre-Approved',
+  'Website Lead',
+  'Busy',
+  'Call Back Later',
+  'Send Info',
 ];

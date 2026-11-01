@@ -5,25 +5,11 @@ import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type { Person, PersonStage, SmartListId } from '@/types/person.types';
 import { SmartListsBar } from './SmartListsBar/SmartListsBar';
-import { PeopleFilters, type LastActivityFilter } from './PeopleFilters/PeopleFilters';
+import { PeopleFilters } from './PeopleFilters/PeopleFilters';
 import { PeopleTable } from './PeopleTable/PeopleTable';
 import { BulkActionBar } from './BulkActionBar/BulkActionBar';
 import { PersonDetailDrawer } from './PersonDetailDrawer/PersonDetailDrawer';
 import { NewPersonModal } from './NewPersonModal/NewPersonModal';
-import type { ColumnConfig } from './ColumnsCustomizer/ColumnsCustomizer';
-
-const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { id: 'name', label: 'Person / Contact', visible: true, canToggle: false },
-  { id: 'stage', label: 'Stage', visible: true, canToggle: true },
-  { id: 'tags', label: 'Tags', visible: true, canToggle: true },
-  { id: 'phone', label: 'Phone', visible: true, canToggle: true },
-  { id: 'email', label: 'Email', visible: true, canToggle: true },
-  { id: 'source', label: 'Source', visible: true, canToggle: true },
-  { id: 'lastActivity', label: 'Last Activity', visible: true, canToggle: true },
-  { id: 'dealValue', label: 'Est. Value', visible: true, canToggle: true },
-  { id: 'assignedTo', label: 'Assigned Agent', visible: false, canToggle: true },
-  { id: 'createdAt', label: 'Created Date', visible: false, canToggle: true },
-];
 
 export function PeopleView() {
   const { theme } = useThemeContext();
@@ -43,106 +29,68 @@ export function PeopleView() {
   const [searchValue, setSearchValue]             = useState('');
   const [stageFilter, setStageFilter]             = useState<'All' | PersonStage>('All');
   const [selectedTag, setSelectedTag]             = useState('');
-  const [activityFilter, setActivityFilter]       = useState<LastActivityFilter>('all');
-  const [assigneeFilter, setAssigneeFilter]       = useState('all');
+  const [selectedNiche, setSelectedNiche]         = useState('');
+  const [selectedCity, setSelectedCity]           = useState('');
 
   const [selectedIds, setSelectedIds]             = useState<string[]>([]);
   const [activePerson, setActivePerson]           = useState<Person | null>(null);
   const [isNewPersonOpen, setIsNewPersonOpen]     = useState(false);
-  const [columns, setColumns]                     = useState<ColumnConfig[]>(DEFAULT_COLUMNS);
-
-  // Column toggles
-  const handleToggleColumn = (id: string) => {
-    setColumns((prev) =>
-      prev.map((c) => (c.id === id && c.canToggle ? { ...c, visible: !c.visible } : c))
-    );
-  };
-
-  const handleResetColumns = () => {
-    setColumns(DEFAULT_COLUMNS);
-  };
 
   // Smart List Dynamic Counts
   const smartListCounts = useMemo(() => {
     return {
-      all: people.length,
-      new_leads: people.filter((p) => p.stage === 'Lead').length,
-      recently_active: people.filter((p) => {
-        const lower = p.lastActivity.relativeTime.toLowerCase();
-        return lower.includes('hour') || lower.includes('min') || lower.includes('yesterday') || lower.includes('1 day');
-      }).length,
-      hot_prospects: people.filter((p) => p.stage === 'Hot Prospect' || p.stage === 'Negotiation').length,
-      nurture: people.filter((p) => {
-        const lower = p.lastActivity.relativeTime.toLowerCase();
-        return lower.includes('day') && (parseInt(lower) > 10 || lower.includes('14') || lower.includes('18'));
-      }).length,
-      unassigned: people.filter((p) => p.assignedTo.toLowerCase().includes('unassigned') || p.assignedTo.toLowerCase().includes('pond')).length,
+      all:          people.length,
+      new_leads:    people.filter((p) => p.stage === 'New Leads').length,
+      contacted:    people.filter((p) => p.stage === 'Contacted').length,
+      booked:       people.filter((p) => p.stage === 'Booked').length,
+      closed:       people.filter((p) => p.stage === 'Closed').length,
+      follow_up:    people.filter((p) => p.stage === 'Follow-Up').length,
+      denied:       people.filter((p) => p.stage === 'Denied').length,
+      past_clients: people.filter((p) => p.stage === 'Past Clients').length,
     };
   }, [people]);
 
   // Filtering Logic
   const filteredPeople = useMemo(() => {
     return people.filter((p) => {
-      // 1. Smart List condition
-      if (selectedSmartList === 'new_leads' && p.stage !== 'Lead') return false;
-      if (selectedSmartList === 'recently_active') {
-        const lower = p.lastActivity.relativeTime.toLowerCase();
-        const isRecent = lower.includes('hour') || lower.includes('min') || lower.includes('yesterday') || lower.includes('1 day');
-        if (!isRecent) return false;
-      }
-      if (selectedSmartList === 'hot_prospects' && p.stage !== 'Hot Prospect' && p.stage !== 'Negotiation') {
-        return false;
-      }
-      if (selectedSmartList === 'nurture') {
-        const lower = p.lastActivity.relativeTime.toLowerCase();
-        const isNurture = lower.includes('day') && (parseInt(lower) > 10 || lower.includes('14') || lower.includes('18'));
-        if (!isNurture) return false;
-      }
-      if (selectedSmartList === 'unassigned') {
-        const isUnassigned = p.assignedTo.toLowerCase().includes('unassigned') || p.assignedTo.toLowerCase().includes('pond');
-        if (!isUnassigned) return false;
-      }
+      // 1. Smart List Tab
+      if (selectedSmartList === 'new_leads' && p.stage !== 'New Leads') return false;
+      if (selectedSmartList === 'contacted' && p.stage !== 'Contacted') return false;
+      if (selectedSmartList === 'booked' && p.stage !== 'Booked') return false;
+      if (selectedSmartList === 'closed' && p.stage !== 'Closed') return false;
+      if (selectedSmartList === 'follow_up' && p.stage !== 'Follow-Up') return false;
+      if (selectedSmartList === 'denied' && p.stage !== 'Denied') return false;
+      if (selectedSmartList === 'past_clients' && p.stage !== 'Past Clients') return false;
 
-      // 2. Stage Filter
+      // 2. Stage Filter Dropdown
       if (stageFilter !== 'All' && p.stage !== stageFilter) return false;
 
       // 3. Tag Filter
       if (selectedTag && !p.tags.includes(selectedTag)) return false;
 
-      // 4. Assignee Filter
-      if (assigneeFilter !== 'all') {
-        if (assigneeFilter === 'unassigned') {
-          const isUn = p.assignedTo.toLowerCase().includes('unassigned') || p.assignedTo.toLowerCase().includes('pond');
-          if (!isUn) return false;
-        } else if (p.assignedTo !== assigneeFilter) {
-          return false;
-        }
-      }
+      // 4. Niche Filter
+      if (selectedNiche && p.niche !== selectedNiche) return false;
 
-      // 5. Activity Filter
-      if (activityFilter !== 'all') {
-        const lower = p.lastActivity.relativeTime.toLowerCase();
-        if (activityFilter === 'today' && !lower.includes('hour') && !lower.includes('min')) return false;
-        if (activityFilter === '7days' && !lower.includes('hour') && !lower.includes('min') && !lower.includes('yesterday') && !lower.includes('1 day') && !lower.includes('3 day')) return false;
-        if (activityFilter === 'older30' && !lower.includes('14 day') && !lower.includes('18 day') && !lower.includes('month')) return false;
-      }
+      // 5. City Filter
+      if (selectedCity && p.city !== selectedCity) return false;
 
       // 6. Search query
       if (searchValue.trim()) {
         const q = searchValue.toLowerCase().trim();
         const matches =
-          p.contactName.toLowerCase().includes(q) ||
           p.businessName.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q) ||
-          p.phone.toLowerCase().includes(q) ||
-          p.location.toLowerCase().includes(q) ||
+          (p.contactName && p.contactName.toLowerCase().includes(q)) ||
+          p.emails.some((em) => em.toLowerCase().includes(q)) ||
+          p.phones.some((ph) => ph.toLowerCase().includes(q)) ||
+          (p.niche && p.niche.toLowerCase().includes(q)) ||
+          (p.city && p.city.toLowerCase().includes(q)) ||
           p.tags.some((t) => t.toLowerCase().includes(q));
         if (!matches) return false;
       }
 
       return true;
     });
-  }, [people, selectedSmartList, stageFilter, selectedTag, assigneeFilter, activityFilter, searchValue]);
+  }, [people, selectedSmartList, stageFilter, selectedTag, selectedNiche, selectedCity, searchValue]);
 
   // Selection handlers
   const handleToggleSelect = (id: string) => {
@@ -163,8 +111,8 @@ export function PeopleView() {
     setSearchValue('');
     setStageFilter('All');
     setSelectedTag('');
-    setActivityFilter('all');
-    setAssigneeFilter('all');
+    setSelectedNiche('');
+    setSelectedCity('');
     setSelectedSmartList('all');
   };
 
@@ -172,11 +120,11 @@ export function PeopleView() {
     Boolean(searchValue) ||
     stageFilter !== 'All' ||
     Boolean(selectedTag) ||
-    activityFilter !== 'all' ||
-    assigneeFilter !== 'all' ||
+    Boolean(selectedNiche) ||
+    Boolean(selectedCity) ||
     selectedSmartList !== 'all';
 
-  // Tag editing on table row
+  // Tag editing directly on table row
   const handleAddTagToPerson = (personId: string, tag: string) => {
     const p = people.find((x) => x.id === personId);
     if (!p) return;
@@ -184,7 +132,7 @@ export function PeopleView() {
     const act = {
       id: `act-${Date.now()}`,
       type: 'tag_added' as const,
-      title: 'Tag Added',
+      title: `Tag Added (#${tag})`,
       description: `Added #${tag}`,
       timestamp: new Date().toISOString(),
       relativeTime: 'Just now',
@@ -200,32 +148,42 @@ export function PeopleView() {
   const handleRemoveTagFromPerson = (personId: string, tag: string) => {
     const p = people.find((x) => x.id === personId);
     if (!p) return;
+    const act = {
+      id: `act-${Date.now()}`,
+      type: 'tag_removed' as const,
+      title: `Tag Removed (#${tag})`,
+      description: `Removed #${tag}`,
+      timestamp: new Date().toISOString(),
+      relativeTime: 'Just now',
+      author: 'Muhammad Taqi',
+    };
     onUpdatePerson({
       ...p,
       tags: p.tags.filter((t) => t !== tag),
+      activities: [act, ...(p.activities || [])],
     });
   };
 
   // Export CSV
   const handleExportSelected = () => {
     const targetPeople = people.filter((p) => selectedIds.includes(p.id));
-    const headers = ['Name', 'Business', 'Phone', 'Email', 'Stage', 'Tags', 'Deal Value', 'Source', 'Location'];
+    const headers = ['Business Name', 'Contact Name', 'Phones', 'Emails', 'Tags', 'Niche', 'City', 'Stage', 'Notes'];
     const rows = targetPeople.map((p) => [
-      `"${p.contactName}"`,
       `"${p.businessName}"`,
-      `"${p.phone}"`,
-      `"${p.email}"`,
-      `"${p.stage}"`,
+      `"${p.contactName || ''}"`,
+      `"${p.phones.join('; ')}"`,
+      `"${p.emails.join('; ')}"`,
       `"${p.tags.join(', ')}"`,
-      p.dealValue,
-      `"${p.source}"`,
-      `"${p.location}"`,
+      `"${p.niche}"`,
+      `"${p.city}"`,
+      `"${p.stage}"`,
+      `"${(p.notes || '').replace(/"/g, '""')}"`,
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `FollowUpBoss_People_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `TeraFlow_Contacts_Export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -240,12 +198,12 @@ export function PeopleView() {
             People
           </h1>
           <p className={`text-xs ${theme.textMuted} mt-0.5`}>
-            Follow Up Boss contact management &bull; Smart lists, multi-tag filtering, and activity pipelines.
+            Manage contacts, manual calling &amp; emailing, niches, and pipeline stages.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-semibold">
           <span className={`px-2.5 py-1 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMuted}`}>
-            Total Database: <strong className={theme.textMain}>{people.length}</strong>
+            Total Contacts: <strong className={theme.textMain}>{people.length}</strong>
           </span>
           <span className={`px-2.5 py-1 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMuted}`}>
             Filtered: <strong className="text-primary">{filteredPeople.length}</strong>
@@ -271,13 +229,10 @@ export function PeopleView() {
         onStageFilterChange={setStageFilter}
         selectedTag={selectedTag}
         onSelectedTagChange={setSelectedTag}
-        activityFilter={activityFilter}
-        onActivityFilterChange={setActivityFilter}
-        assigneeFilter={assigneeFilter}
-        onAssigneeFilterChange={setAssigneeFilter}
-        columns={columns}
-        onToggleColumn={handleToggleColumn}
-        onResetColumns={handleResetColumns}
+        selectedNiche={selectedNiche}
+        onSelectedNicheChange={setSelectedNiche}
+        selectedCity={selectedCity}
+        onSelectedCityChange={setSelectedCity}
         onOpenNewPerson={() => setIsNewPersonOpen(true)}
         onResetAllFilters={handleResetAllFilters}
         hasActiveFilters={hasActiveFilters}
@@ -293,7 +248,6 @@ export function PeopleView() {
         onStageChange={onPersonStageChange}
         onAddTag={handleAddTagToPerson}
         onRemoveTag={handleRemoveTagFromPerson}
-        columns={columns}
       />
 
       {/* Floating Bulk Actions Bar */}
@@ -315,7 +269,7 @@ export function PeopleView() {
         onExportSelected={handleExportSelected}
       />
 
-      {/* Person Detail Drawer */}
+      {/* Centered Popup Contact Detail Modal */}
       <PersonDetailDrawer
         person={activePerson}
         onClose={() => setActivePerson(null)}
@@ -329,7 +283,7 @@ export function PeopleView() {
         }}
       />
 
-      {/* New Person Modal */}
+      {/* New Contact Modal */}
       <NewPersonModal
         isOpen={isNewPersonOpen}
         onClose={() => setIsNewPersonOpen(false)}

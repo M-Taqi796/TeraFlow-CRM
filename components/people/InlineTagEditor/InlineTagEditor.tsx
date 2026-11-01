@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
-import { COMMON_FUB_TAGS } from '@/types/person.types';
+import { COMMON_TAGS } from '@/types/person.types';
 
 interface InlineTagEditorProps {
   existingTags: string[];
@@ -45,7 +45,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
     }
   };
 
-  const availableTags = COMMON_FUB_TAGS.filter((t) => !existingTags.includes(t));
+  const availableTags = COMMON_TAGS.filter((t: string) => !existingTags.includes(t));
 
   return (
     <div className="relative inline-block" ref={popoverRef}>
@@ -96,7 +96,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
                 All standard tags applied
               </p>
             ) : (
-              availableTags.map((tag) => (
+              availableTags.map((tag: string) => (
                 <button
                   key={tag}
                   type="button"

@@ -4,13 +4,12 @@ import { useState } from 'react';
 import {
   TagIcon,
   ArrowsRightLeftIcon,
-  EnvelopeIcon,
   ArrowDownTrayIcon,
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { PersonStage } from '@/types/person.types';
-import { PERSON_STAGES, COMMON_FUB_TAGS } from '@/types/person.types';
+import { PERSON_STAGES, COMMON_TAGS } from '@/types/person.types';
 
 interface BulkActionBarProps {
   selectedCount: number;
@@ -48,7 +47,7 @@ export function BulkActionBar({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Add Tag Dropdown */}
           <div className="relative">
             <button
@@ -67,7 +66,7 @@ export function BulkActionBar({
                 <p className="text-[10px] uppercase font-bold text-slate-400 px-2 py-1">
                   Apply Tag
                 </p>
-                {COMMON_FUB_TAGS.map((tag) => (
+                {COMMON_TAGS.map((tag) => (
                   <button
                     key={tag}
                     type="button"
