@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import {
   XMarkIcon,
   PlusIcon,
-  ArrowUpTrayIcon,
   DocumentArrowUpIcon,
   CheckCircleIcon,
   UserPlusIcon,
   TrashIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
-import type { Person, PersonStage } from '@/types/person.types';
+import type {
+  Person,
+  PersonStage,
+  ContactFieldType,
+  ContactInfoField,
+} from '@/types/person.types';
 import {
   PERSON_STAGES,
   DEFAULT_NICHES,
@@ -35,7 +40,7 @@ export function NewPersonModal({
   onCreate,
   onBulkCreate,
 }: NewPersonModalProps) {
-  const { theme, isDarkMode } = useThemeContext();
+  const { theme } = useThemeContext();
   const {
     allTags,
     onAddGlobalTag,
@@ -50,7 +55,9 @@ export function NewPersonModal({
   // Active tab: 'import' or 'manual'
   const [activeTab, setActiveTab] = useState<ModalTab>('import');
 
-  // ---------- TAB 1: FILE IMPORT STATE ----------
+  // ==============================================================
+  // TAB 1: FILE IMPORT STATE
+  // ==============================================================
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -58,7 +65,7 @@ export function NewPersonModal({
   const [parsedLeads, setParsedLeads] = useState<Person[]>([]);
   const [previewRows, setPreviewRows] = useState<ParsedLeadPreview[]>([]);
 
-  // Import Options: Niche & City & Stage
+  // Import Options: Niche, City, Stage
   const [importNiche, setImportNiche] = useState('Dentists');
   const [isCustomImportNiche, setIsCustomImportNiche] = useState(false);
   const [customImportNiche, setCustomImportNiche] = useState('');
@@ -68,6 +75,29 @@ export function NewPersonModal({
   const [customImportCity, setCustomImportCity] = useState('');
 
   const [importStage, setImportStage] = useState<PersonStage>('New Leads');
+
+  // Import Tags: 3-Part System
+  const [importTags, setImportTags] = useState<string[]>([]);
+  const [importTagInput, setImportTagInput] = useState('');
+
+  const availableImportTags = useMemo(
+    () => allTags.filter((t) => !importTags.includes(t)),
+    [allTags, importTags]
+  );
+
+  const handleAddImportTag = (t: string) => {
+    const clean = t.trim().replace(/^#/, '');
+    if (!clean) return;
+    if (!importTags.includes(clean)) {
+      setImportTags([...importTags, clean]);
+      onAddGlobalTag(clean);
+    }
+    setImportTagInput('');
+  };
+
+  const handleRemoveImportTag = (t: string) => {
+    setImportTags(importTags.filter((tag) => tag !== t));
+  };
 
   // Combined Niches & Cities
   const combinedNiches = Array.from(new Set([...DEFAULT_NICHES, ...customNiches]));
@@ -110,10 +140,16 @@ export function NewPersonModal({
       onAddCustomCity(customImportCity.trim());
     }
 
+    // Attach chosen import tags to all leads from this file
+    const finalLeads = parsedLeads.map((lead) => ({
+      ...lead,
+      tags: Array.from(new Set([...lead.tags, ...importTags])),
+    }));
+
     if (onBulkCreate) {
-      onBulkCreate(parsedLeads);
+      onBulkCreate(finalLeads);
     } else {
-      onBulkCreatePeople(parsedLeads);
+      onBulkCreatePeople(finalLeads);
     }
 
     onClose();
@@ -125,14 +161,21 @@ export function NewPersonModal({
     setParsedLeads([]);
     setPreviewRows([]);
     setParseError(null);
+    setImportTags([]);
+    setImportTagInput('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ---------- TAB 2: MANUAL CONTACT STATE ----------
+  // ==============================================================
+  // TAB 2: MANUAL CONTACT STATE
+  // ==============================================================
   const [businessName, setBusinessName] = useState('');
   const [contactName, setContactName] = useState('');
   const [phones, setPhones] = useState<string[]>(['']);
   const [emails, setEmails] = useState<string[]>(['']);
+
+  // Other Contact Info (Website, LinkedIn, Instagram, Facebook, Address)
+  const [extraContactFields, setExtraContactFields] = useState<ContactInfoField[]>([]);
 
   const [manualNiche, setManualNiche] = useState('Dentists');
   const [isCustomManualNiche, setIsCustomManualNiche] = useState(false);
@@ -144,8 +187,15 @@ export function NewPersonModal({
 
   const [manualStage, setManualStage] = useState<PersonStage>('New Leads');
   const [manualNotes, setManualNotes] = useState('');
+
+  // Manual Tags: 3-Part System
   const [manualTags, setManualTags] = useState<string[]>(['VIP']);
   const [manualTagInput, setManualTagInput] = useState('');
+
+  const availableManualTags = useMemo(
+    () => allTags.filter((t) => !manualTags.includes(t)),
+    [allTags, manualTags]
+  );
 
   const handleAddPhoneField = () => setPhones([...phones, '']);
   const handlePhoneChange = (idx: number, val: string) => {
@@ -167,6 +217,38 @@ export function NewPersonModal({
   const handleRemoveEmailField = (idx: number) => {
     if (emails.length <= 1) return;
     setEmails(emails.filter((_, i) => i !== idx));
+  };
+
+  // Add Other Contact (website, linkedin, instagram, facebook, address)
+  const handleAddExtraField = (type: ContactFieldType) => {
+    const labels: Record<ContactFieldType, string> = {
+      website: 'Website',
+      linkedin: 'LinkedIn',
+      instagram: 'Instagram',
+      facebook: 'Facebook',
+      address: 'Address',
+      phone: 'Phone',
+      email: 'Email',
+    };
+    setExtraContactFields([
+      ...extraContactFields,
+      {
+        id: `cf-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type,
+        label: labels[type],
+        value: '',
+      },
+    ]);
+  };
+
+  const handleExtraFieldChange = (id: string, value: string) => {
+    setExtraContactFields((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, value } : f))
+    );
+  };
+
+  const handleRemoveExtraField = (id: string) => {
+    setExtraContactFields((prev) => prev.filter((f) => f.id !== id));
   };
 
   const handleAddManualTag = (t: string) => {
@@ -205,6 +287,11 @@ export function NewPersonModal({
     const cleanPhones = phones.map((p) => p.trim()).filter(Boolean);
     const cleanEmails = emails.map((e) => e.trim()).filter(Boolean);
 
+    // Keep only non-empty extra contact fields
+    const validExtraFields = extraContactFields
+      .map((f) => ({ ...f, value: f.value.trim() }))
+      .filter((f) => Boolean(f.value));
+
     const newPerson: Person = {
       id: `p-${Date.now()}`,
       businessName: businessName.trim(),
@@ -217,7 +304,7 @@ export function NewPersonModal({
       tags: manualTags,
       notes: manualNotes.trim() || 'New contact created manually.',
       createdAt: 'Just now',
-      contactFields: [],
+      contactFields: validExtraFields,
       activities: [
         {
           id: `act-${Date.now()}`,
@@ -248,14 +335,14 @@ export function NewPersonModal({
         className={`w-full max-w-xl max-h-[90vh] flex flex-col rounded-2xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header - Super Clean */}
-        <div className={`px-5 py-4 border-b ${theme.border} flex items-center justify-between shrink-0`}>
+        {/* Header */}
+        <div className={`px-5 py-3.5 border-b ${theme.border} flex items-center justify-between shrink-0`}>
           <div className="flex items-center gap-4">
             <h2 className={`text-base font-bold tracking-tight ${theme.textMain}`}>
               New Lead
             </h2>
 
-            {/* Clean Tabs */}
+            {/* Tabs */}
             <div className="flex items-center gap-1 border-l border-slate-200 dark:border-zinc-800 pl-4">
               <button
                 type="button"
@@ -294,17 +381,19 @@ export function NewPersonModal({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* TAB 1: IMPORT LEADS */}
+          {/* ============================================================== */}
+          {/* TAB 1: IMPORT LEADS                                            */}
+          {/* ============================================================== */}
           {activeTab === 'import' && (
             <div className="space-y-4 animate-in fade-in">
-              {/* Minimal Dropzone */}
+              {/* Dropzone with subtle gray dashed border */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className={`border border-dashed ${
                   selectedFile
                     ? 'border-primary bg-primary/5'
                     : 'border-slate-300 dark:border-zinc-700 hover:border-primary/70'
-                } rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2`}
+                } rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5`}
               >
                 <input
                   ref={fileInputRef}
@@ -353,7 +442,7 @@ export function NewPersonModal({
                 </div>
               )}
 
-              {/* Direct Categorization Row */}
+              {/* Niche, City, Stage */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {/* Niche */}
                 <div className="space-y-1">
@@ -458,6 +547,82 @@ export function NewPersonModal({
                 </div>
               </div>
 
+              {/* 3-Part Tags for Import */}
+              <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+                <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
+                  Tags for Imported Leads
+                </label>
+
+                {/* 1. Assigned Tags */}
+                <div className="flex items-center gap-1.5 flex-wrap min-h-[26px]">
+                  {importTags.length === 0 ? (
+                    <span className="text-xs text-slate-400 italic">No tags selected</span>
+                  ) : (
+                    importTags.map((t) => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200"
+                      >
+                        <span>{t}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImportTag(t)}
+                          className="text-slate-400 hover:text-rose-500 cursor-pointer ml-1"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                {/* 2. Choose from DB Tags */}
+                {availableImportTags.length > 0 && (
+                  <div className="space-y-1 pt-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Choose from DB Tags:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {availableImportTags.slice(0, 8).map((dbTag) => (
+                        <button
+                          key={dbTag}
+                          type="button"
+                          onClick={() => handleAddImportTag(dbTag)}
+                          className="text-[11px] px-2 py-0.5 rounded-md border border-dashed border-slate-300 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:text-primary hover:border-primary transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <PlusIcon className="w-3 h-3" />
+                          <span>{dbTag}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Add New Tag to DB & Import */}
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <input
+                    type="text"
+                    value={importTagInput}
+                    onChange={(e) => setImportTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddImportTag(importTagInput);
+                      }
+                    }}
+                    placeholder="Type new tag & Enter..."
+                    className={`flex-1 text-xs p-1.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddImportTag(importTagInput)}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-600 cursor-pointer"
+                  >
+                    + Add Tag
+                  </button>
+                </div>
+              </div>
+
               {/* Parsed Preview Table */}
               {parsedLeads.length > 0 && (
                 <div className="space-y-2 pt-1">
@@ -504,7 +669,9 @@ export function NewPersonModal({
             </div>
           )}
 
-          {/* TAB 2: MANUAL CONTACT ENTRY */}
+          {/* ============================================================== */}
+          {/* TAB 2: MANUAL CONTACT ENTRY                                    */}
+          {/* ============================================================== */}
           {activeTab === 'manual' && (
             <form id="manual-contact-form" onSubmit={handleManualSubmit} className="space-y-3.5 animate-in fade-in">
               {/* Company on top */}
@@ -602,6 +769,111 @@ export function NewPersonModal({
                         <TrashIcon className="w-4 h-4" />
                       </button>
                     )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Other Contact Info (Website, LinkedIn, Instagram, Facebook, Address) */}
+              <div className="space-y-2 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <label className={`text-[11px] font-medium ${theme.textMuted}`}>
+                    Other Contacts (Website, Social, Address)
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleAddExtraField('website')}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      + Website
+                    </button>
+                    <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAddExtraField('linkedin')}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      + LinkedIn
+                    </button>
+                    <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAddExtraField('instagram')}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      + Instagram
+                    </button>
+                    <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAddExtraField('facebook')}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      + Facebook
+                    </button>
+                    <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAddExtraField('address')}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      + Address
+                    </button>
+                  </div>
+                </div>
+
+                {extraContactFields.map((field) => (
+                  <div key={field.id} className="flex items-center gap-2">
+                    <select
+                      value={field.type}
+                      onChange={(e) => {
+                        const newType = e.target.value as ContactFieldType;
+                        const defaultLabels: Record<ContactFieldType, string> = {
+                          website: 'Website',
+                          linkedin: 'LinkedIn',
+                          instagram: 'Instagram',
+                          facebook: 'Facebook',
+                          address: 'Address',
+                          phone: 'Phone',
+                          email: 'Email',
+                        };
+                        setExtraContactFields((prev) =>
+                          prev.map((f) =>
+                            f.id === field.id
+                              ? { ...f, type: newType, label: defaultLabels[newType] }
+                              : f
+                          )
+                        );
+                      }}
+                      className={`w-28 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
+                    >
+                      <option value="website">Website</option>
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="address">Address</option>
+                    </select>
+
+                    <input
+                      type="text"
+                      value={field.value}
+                      onChange={(e) => handleExtraFieldChange(field.id, e.target.value)}
+                      placeholder={
+                        field.type === 'address'
+                          ? '123 Main St, Suite 400...'
+                          : `https://${field.type}.com/...`
+                      }
+                      className={`flex-1 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExtraField(field.id)}
+                      className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer"
+                      title="Remove field"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -711,27 +983,56 @@ export function NewPersonModal({
                 </div>
               </div>
 
-              {/* Tags */}
-              <div className="space-y-1.5">
-                <label className={`text-[11px] font-medium ${theme.textMuted} block`}>Tags</label>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {manualTags.map((t) => (
-                    <span
-                      key={t}
-                      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain}`}
-                    >
-                      <span>{t}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveManualTag(t)}
-                        className="text-slate-400 hover:text-rose-500 cursor-pointer ml-1"
+              {/* 3-Part Tags for Manual Contact */}
+              <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+                <label className={`text-[11px] font-semibold ${theme.textMain} block`}>Tags</label>
+
+                {/* 1. Assigned Tags */}
+                <div className="flex items-center gap-1.5 flex-wrap min-h-[26px]">
+                  {manualTags.length === 0 ? (
+                    <span className="text-xs text-slate-400 italic">No tags selected</span>
+                  ) : (
+                    manualTags.map((t) => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200"
                       >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
+                        <span>{t}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveManualTag(t)}
+                          className="text-slate-400 hover:text-rose-500 cursor-pointer ml-1"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))
+                  )}
                 </div>
 
+                {/* 2. Choose from DB Tags */}
+                {availableManualTags.length > 0 && (
+                  <div className="space-y-1 pt-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Choose from DB Tags:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {availableManualTags.slice(0, 8).map((dbTag) => (
+                        <button
+                          key={dbTag}
+                          type="button"
+                          onClick={() => handleAddManualTag(dbTag)}
+                          className="text-[11px] px-2 py-0.5 rounded-md border border-dashed border-slate-300 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:text-primary hover:border-primary transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <PlusIcon className="w-3 h-3" />
+                          <span>{dbTag}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Add New Tag to DB & Contact */}
                 <div className="flex items-center gap-1.5 pt-0.5">
                   <input
                     type="text"
@@ -743,15 +1044,15 @@ export function NewPersonModal({
                         handleAddManualTag(manualTagInput);
                       }
                     }}
-                    placeholder="Type tag & Enter..."
-                    className={`flex-1 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                    placeholder="Type new tag & Enter..."
+                    className={`flex-1 text-xs p-1.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
                   />
                   <button
                     type="button"
                     onClick={() => handleAddManualTag(manualTagInput)}
-                    className="px-3 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-600 cursor-pointer"
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-600 cursor-pointer"
                   >
-                    + Add
+                    + Add Tag
                   </button>
                 </div>
               </div>
