@@ -53,7 +53,7 @@ export function ColumnsCustomizer({
         <div
           className={`absolute right-0 mt-2 w-56 rounded-xl border ${theme.border} ${theme.bgPanel} shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100`}
         >
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-zinc-800">
             <span className={`text-xs font-bold ${theme.textMain} uppercase tracking-wider`}>
               Visible Columns
             </span>

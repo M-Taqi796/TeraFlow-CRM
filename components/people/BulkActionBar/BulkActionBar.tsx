@@ -76,7 +76,7 @@ export function BulkActionBar({
                     }}
                     className="w-full text-left text-xs px-2 py-1.5 rounded text-slate-200 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   >
-                    #{tag}
+                    {tag}
                   </button>
                 ))}
               </div>

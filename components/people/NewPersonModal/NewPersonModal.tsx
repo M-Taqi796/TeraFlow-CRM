@@ -785,7 +785,7 @@ export function NewPersonModal({
                       onClick={() => handleAddExtraField('website')}
                       className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                     >
-                      + Website
+                      Website
                     </button>
                     <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
                     <button
@@ -793,7 +793,7 @@ export function NewPersonModal({
                       onClick={() => handleAddExtraField('linkedin')}
                       className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                     >
-                      + LinkedIn
+                      LinkedIn
                     </button>
                     <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
                     <button
@@ -801,7 +801,7 @@ export function NewPersonModal({
                       onClick={() => handleAddExtraField('instagram')}
                       className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                     >
-                      + Instagram
+                      Instagram
                     </button>
                     <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
                     <button
@@ -809,7 +809,7 @@ export function NewPersonModal({
                       onClick={() => handleAddExtraField('facebook')}
                       className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                     >
-                      + Facebook
+                      Facebook
                     </button>
                     <span className="text-slate-300 dark:text-zinc-700">&bull;</span>
                     <button
@@ -817,7 +817,7 @@ export function NewPersonModal({
                       onClick={() => handleAddExtraField('address')}
                       className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
                     >
-                      + Address
+                      Address
                     </button>
                   </div>
                 </div>

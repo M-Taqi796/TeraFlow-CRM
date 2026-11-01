@@ -66,7 +66,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
           onClick={(e) => e.stopPropagation()}
           className={`absolute left-0 mt-1 w-52 rounded-xl border ${theme.border} ${theme.bgPanel} shadow-xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-100`}
         >
-          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border">
+          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-200 dark:border-zinc-800">
             <span className={`text-[11px] font-bold ${theme.textMain} uppercase tracking-wider`}>
               Add Tag
             </span>

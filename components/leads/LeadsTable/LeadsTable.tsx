@@ -78,7 +78,7 @@ export function LeadsTable({
               <th className="py-3 px-4">Stage</th>
             </tr>
           </thead>
-          <tbody className={`divide-y ${theme.border} text-xs`}>
+          <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">
             {leads.length === 0 ? (
               <tr>
                 <td colSpan={7} className={`py-12 text-center ${theme.textSubtle}`}>

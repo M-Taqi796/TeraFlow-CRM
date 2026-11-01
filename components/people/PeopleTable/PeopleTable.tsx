@@ -98,7 +98,7 @@ export function PeopleTable({
             </tr>
           </thead>
 
-          <tbody className={`divide-y ${theme.border} text-xs`}>
+          <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">
             {people.length === 0 ? (
               <tr>
                 <td colSpan={8} className={`py-12 text-center ${theme.textSubtle}`}>

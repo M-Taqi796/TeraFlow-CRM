@@ -1527,7 +1527,7 @@ export function PersonDetailDrawer({
                     <div
                       className={`absolute right-0 mt-1.5 w-56 rounded-xl border ${theme.border} ${theme.bgPanel} shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100`}
                     >
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-zinc-800">
                         <span className={`text-[11px] font-bold ${theme.textMain} uppercase tracking-wider`}>
                           Timeline Filters
                         </span>

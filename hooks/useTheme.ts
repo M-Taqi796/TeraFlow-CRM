@@ -7,6 +7,7 @@ export interface ThemePalette {
   bgPanel: string;
   bgSubtle: string;
   border: string;
+  divide: string;
   textMain: string;
   textMuted: string;
   textSubtle: string;
@@ -49,7 +50,8 @@ export function useTheme(): UseThemeReturn {
     bgApp:       isDarkMode ? 'bg-[#121214]'      : 'bg-[#F8FAFC]',
     bgPanel:     isDarkMode ? 'bg-[#18181C]'      : 'bg-[#FFFFFF]',
     bgSubtle:    isDarkMode ? 'bg-[#202026]'      : 'bg-[#F1F5F9]',
-    border:      isDarkMode ? 'border-[#333338]'  : 'border-[#CBD5E1]',
+    border:      isDarkMode ? 'border-zinc-800'   : 'border-slate-200',
+    divide:      isDarkMode ? 'divide-zinc-800'   : 'divide-slate-200',
     textMain:    isDarkMode ? 'text-[#F3F4F6]'    : 'text-[#1E293B]',
     textMuted:   isDarkMode ? 'text-[#9CA3AF]'    : 'text-[#475569]',
     textSubtle:  isDarkMode ? 'text-[#6B7280]'    : 'text-[#64748B]',

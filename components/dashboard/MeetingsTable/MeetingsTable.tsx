@@ -65,7 +65,7 @@ export function MeetingsTable({
               <th className="py-3 px-4">Status</th>
             </tr>
           </thead>
-          <tbody className={`divide-y ${theme.border} text-xs`}>
+          <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">
             {meetings.length === 0 ? (
               <tr>
                 <td colSpan={7} className={`py-8 text-center ${theme.textSubtle}`}>
