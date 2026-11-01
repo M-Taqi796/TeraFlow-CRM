@@ -2,6 +2,22 @@
 
 @import "tailwindcss";
 
+*, ::before, ::after {
+  border-color: var(--default-border-color, #E2E8F0);
+}
+
+.dark *, .dark ::before, .dark ::after {
+  border-color: var(--default-border-color, #27272A);
+}
+
+hr, table, thead, tbody, tr, th, td {
+  border-color: var(--default-border-color, #E2E8F0);
+}
+
+.dark hr, .dark table, .dark thead, .dark tbody, .dark tr, .dark th, .dark td {
+  border-color: var(--default-border-color, #27272A);
+}
+
 @theme inline {
   --font-sans: 'Fira Sans', sans-serif;
   --font-fira: 'Fira Sans', sans-serif;
@@ -38,6 +54,7 @@
   --color-surface: #FFFFFF;
   --color-surface-alt: #F1F5F9;
   --color-border: #CBD5E1;
+  --default-border-color: #E2E8F0;
 
   /* Typography */
   --font-family-base: 'Fira Sans', sans-serif;
@@ -56,6 +73,7 @@
   --color-surface: #18181C;
   --color-surface-alt: #202026;
   --color-border: #333338;
+  --default-border-color: #27272A;
 }
 
 /* Base resets & typography */

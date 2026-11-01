@@ -1071,7 +1071,7 @@ export function PersonDetailDrawer({
 
               {/* 2. Suggestions (all other tags in DB) */}
               {suggestedTags.length > 0 && (
-                <div className="space-y-1.5 pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
+                <div className="space-y-1.5 pt-1 border-t border-slate-200 dark:border-zinc-800">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Suggestions (Click to add)
                   </span>

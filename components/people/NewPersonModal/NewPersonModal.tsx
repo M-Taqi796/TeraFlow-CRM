@@ -548,7 +548,7 @@ export function NewPersonModal({
               </div>
 
               {/* 3-Part Tags for Import */}
-              <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+              <div className="space-y-1.5 pt-1 border-t border-slate-200 dark:border-zinc-800">
                 <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
                   Tags for Imported Leads
                 </label>
@@ -774,7 +774,7 @@ export function NewPersonModal({
               </div>
 
               {/* Other Contact Info (Website, LinkedIn, Instagram, Facebook, Address) */}
-              <div className="space-y-2 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+              <div className="space-y-2 pt-1 border-t border-slate-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
                   <label className={`text-[11px] font-medium ${theme.textMuted}`}>
                     Other Contacts (Website, Social, Address)
@@ -984,7 +984,7 @@ export function NewPersonModal({
               </div>
 
               {/* 3-Part Tags for Manual Contact */}
-              <div className="space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-zinc-800">
+              <div className="space-y-1.5 pt-1 border-t border-slate-200 dark:border-zinc-800">
                 <label className={`text-[11px] font-semibold ${theme.textMain} block`}>Tags</label>
 
                 {/* 1. Assigned Tags */}

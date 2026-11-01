@@ -54,7 +54,7 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
 
   return (
     <tr
-      className={`${theme.rowHover} transition-colors cursor-pointer`}
+      className={`${theme.rowHover} border-b border-slate-200 dark:border-zinc-800 transition-colors cursor-pointer`}
       onClick={() => onRowClick(l)}
     >
       {/* Business + Contact */}

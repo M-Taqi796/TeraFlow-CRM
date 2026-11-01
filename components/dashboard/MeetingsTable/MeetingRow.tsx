@@ -30,7 +30,7 @@ export function MeetingRow({ meeting: m, onStatusChange }: MeetingRowProps) {
   };
 
   return (
-    <tr className={`${theme.rowHover} transition-colors`}>
+    <tr className={`${theme.rowHover} border-b border-slate-200 dark:border-zinc-800 transition-colors`}>
       <td className={`py-3.5 px-4 font-semibold ${theme.textMain} fira-sans-semibold`}>
         {m.businessName}
       </td>

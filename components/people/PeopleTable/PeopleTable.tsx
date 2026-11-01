@@ -118,7 +118,7 @@ export function PeopleTable({
                 return (
                   <tr
                     key={person.id}
-                    className={`transition-colors cursor-pointer ${
+                    className={`transition-colors cursor-pointer border-b border-slate-200 dark:border-zinc-800 ${
                       isSelected
                         ? isDarkMode
                           ? 'bg-blue-950/20'
