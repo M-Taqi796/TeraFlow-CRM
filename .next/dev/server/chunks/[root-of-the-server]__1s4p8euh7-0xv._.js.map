@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 76, "column": 0}, "map": {"version":3,"sources":["file:///Users/muhammadtaqi/workspace/TeraFlow%20CRM/app/api/meetings/route.ts"],"sourcesContent":["import { NextResponse } from 'next/server';\n\nexport async function GET() {\n  return NextResponse.json({ message: 'Meetings API ready', data: [] });\n}\n\nexport async function POST(request: Request) {\n  const body = await request.json();\n  return NextResponse.json({ message: 'Meeting created', data: body });\n}\n"],"names":["GET","json","message","data","POST","request","body"],"mappings":";;;;;;AAAA;;AAEO,eAAeA;IACpB,OAAO,gJAAY,CAACC,IAAI,CAAC;QAAEC,SAAS;QAAsBC,MAAM,EAAE;IAAC;AACrE;AAEO,eAAeC,KAAKC,OAAgB;IACzC,MAAMC,OAAO,MAAMD,QAAQJ,IAAI;IAC/B,OAAO,gJAAY,CAACA,IAAI,CAAC;QAAEC,SAAS;QAAmBC,MAAMG;IAAK;AACpE"}}]
+}

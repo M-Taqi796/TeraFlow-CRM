@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 76, "column": 0}, "map": {"version":3,"sources":["file:///Users/muhammadtaqi/workspace/TeraFlow%20CRM/app/api/leads/route.ts"],"sourcesContent":["import { NextResponse } from 'next/server';\n// import { supabase } from '@/lib/supabase'; // Uncomment when Supabase is configured\n\nexport async function GET() {\n  // TODO: Replace with Supabase query\n  // const { data, error } = await supabase.from('leads').select('*');\n  // if (error) return NextResponse.json({ error: error.message }, { status: 500 });\n  return NextResponse.json({ message: 'Leads API ready', data: [] });\n}\n\nexport async function POST(request: Request) {\n  const body = await request.json();\n  // TODO: Replace with Supabase insert\n  // const { data, error } = await supabase.from('leads').insert(body);\n  return NextResponse.json({ message: 'Lead created', data: body });\n}\n"],"names":["GET","json","message","data","POST","request","body"],"mappings":";;;;;;AAAA;;AAGO,eAAeA;IACpB,oCAAoC;IACpC,oEAAoE;IACpE,kFAAkF;IAClF,OAAO,gJAAY,CAACC,IAAI,CAAC;QAAEC,SAAS;QAAmBC,MAAM,EAAE;IAAC;AAClE;AAEO,eAAeC,KAAKC,OAAgB;IACzC,MAAMC,OAAO,MAAMD,QAAQJ,IAAI;IAC/B,qCAAqC;IACrC,qEAAqE;IACrE,OAAO,gJAAY,CAACA,IAAI,CAAC;QAAEC,SAAS;QAAgBC,MAAMG;IAAK;AACjE"}}]
+}
