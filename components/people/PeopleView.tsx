@@ -270,18 +270,21 @@ export function PeopleView() {
       />
 
       {/* Centered Popup Contact Detail Modal */}
-      <PersonDetailDrawer
-        person={activePerson}
-        onClose={() => setActivePerson(null)}
-        onUpdatePerson={(updated) => {
-          onUpdatePerson(updated);
-          setActivePerson(updated);
-        }}
-        onDeletePerson={(id) => {
-          onDeletePerson(id);
-          setActivePerson(null);
-        }}
-      />
+      {activePerson && (
+        <PersonDetailDrawer
+          key={activePerson.id}
+          person={activePerson}
+          onClose={() => setActivePerson(null)}
+          onUpdatePerson={(updated) => {
+            onUpdatePerson(updated);
+            setActivePerson(updated);
+          }}
+          onDeletePerson={(id) => {
+            onDeletePerson(id);
+            setActivePerson(null);
+          }}
+        />
+      )}
 
       {/* New Contact Modal */}
       <NewPersonModal

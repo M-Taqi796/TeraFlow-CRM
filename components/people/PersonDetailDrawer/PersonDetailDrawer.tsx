@@ -95,6 +95,14 @@ export function PersonDetailDrawer({
     'name_change',
   ]);
 
+  const filteredActivities = useMemo(() => {
+    if (!person) return [];
+    return (person.activities || []).filter((act) => {
+      if (act.type === 'tag_removed' && !selectedTimelineTypes.includes('tag_added')) return false;
+      return selectedTimelineTypes.includes(act.type);
+    });
+  }, [person?.activities, selectedTimelineTypes]);
+
   if (!person) return null;
 
   // Format date helper
@@ -384,13 +392,6 @@ export function PersonDetailDrawer({
       'name_change',
     ]);
   };
-
-  const filteredActivities = useMemo(() => {
-    return (person.activities || []).filter((act) => {
-      if (act.type === 'tag_removed' && !selectedTimelineTypes.includes('tag_added')) return false;
-      return selectedTimelineTypes.includes(act.type);
-    });
-  }, [person.activities, selectedTimelineTypes]);
 
   // Icons for timeline events
   const getActivityIcon = (type: ActivityType) => {
@@ -782,7 +783,14 @@ export function PersonDetailDrawer({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setActionMode(actionMode === 'call' ? 'none' : 'call')}
+                    onClick={() => {
+                      if (actionMode !== 'call') {
+                        setCallDateTime(new Date().toISOString().slice(0, 16));
+                        setActionMode('call');
+                      } else {
+                        setActionMode('none');
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       actionMode === 'call'
                         ? 'bg-blue-600 text-white shadow-xs'
@@ -795,7 +803,14 @@ export function PersonDetailDrawer({
 
                   <button
                     type="button"
-                    onClick={() => setActionMode(actionMode === 'email' ? 'none' : 'email')}
+                    onClick={() => {
+                      if (actionMode !== 'email') {
+                        setEmailDateTime(new Date().toISOString().slice(0, 16));
+                        setActionMode('email');
+                      } else {
+                        setActionMode('none');
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       actionMode === 'email'
                         ? 'bg-amber-600 text-white shadow-xs'
