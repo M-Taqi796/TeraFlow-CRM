@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { XMarkIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type { Meeting } from '@/types/meeting.types';
+import type { Person } from '@/types/person.types';
 import { WORLD_CITIES, type WorldCity, getLiveTimeForZone } from '@/data/worldCities.data';
 
 const PKT_OFFSET_MINUTES = 300; // PKT is UTC+5 = 300 minutes
@@ -13,12 +14,14 @@ interface ScheduleMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMeeting?: Meeting | null;
+  initialPerson?: Person | null;
 }
 
 export function ScheduleMeetingModal({
   isOpen,
   onClose,
   initialMeeting,
+  initialPerson,
 }: ScheduleMeetingModalProps) {
   const { theme } = useThemeContext();
   const { people, onAddMeeting, onEditMeeting } = useCRM();
@@ -64,14 +67,50 @@ export function ScheduleMeetingModal({
   }, []);
 
   // Set default city live time
-  const applyCityTime = (city: WorldCity) => {
+  const applyCityTime = useCallback((city: WorldCity) => {
     setSelectedCity(city);
     setCitySearchQuery(`${city.city}, ${city.state ? city.state + ', ' : ''}${city.country}`);
     const live = getLiveTimeForZone(city.tz);
     setClientLiveTime24(live.time24);
     setClientLiveTime12(live.time12);
     setManualOffsetAdjustment(0);
-  };
+  }, []);
+
+  // Select contact & auto-fetch city from city OR NICHE section
+  const handleSelectContact = useCallback((p: Person) => {
+    setSelectedPersonId(p.id);
+    setBusinessName(p.businessName);
+    setClientName(p.contactName || '');
+    setPhone(p.phones[0] || '');
+    setEmail(p.emails[0] || '');
+    setContactSearch(`${p.businessName}${p.contactName ? ` (${p.contactName})` : ''}`);
+
+    // Check contact.city first
+    let matchedCity: WorldCity | undefined;
+    if (p.city && p.city.trim()) {
+      matchedCity = WORLD_CITIES.find(
+        (c) => c.city.toLowerCase() === p.city.trim().toLowerCase()
+      );
+    }
+
+    // Check contact.niche if not found
+    if (!matchedCity && p.niche && p.niche.trim()) {
+      const nicheLower = p.niche.toLowerCase();
+      matchedCity = WORLD_CITIES.find((c) => nicheLower.includes(c.city.toLowerCase()));
+    }
+
+    // Also check businessName just in case (e.g. "Austin Roofing Pros")
+    if (!matchedCity && p.businessName) {
+      const bLower = p.businessName.toLowerCase();
+      matchedCity = WORLD_CITIES.find((c) => bLower.includes(c.city.toLowerCase()));
+    }
+
+    if (matchedCity) {
+      applyCityTime(matchedCity);
+    } else {
+      applyCityTime(WORLD_CITIES[0]);
+    }
+  }, [applyCityTime]);
 
   // Populate state on open or edit
   useEffect(() => {
@@ -85,6 +124,11 @@ export function ScheduleMeetingModal({
       setTheirTimeFormatted(initialMeeting.theirTime);
       setContactSearch(`${initialMeeting.businessName}`);
       setSelectedPersonId(null);
+    } else if (initialPerson) {
+      handleSelectContact(initialPerson);
+      const today = new Date();
+      setMeetingDate(today.toISOString().slice(0, 10));
+      setClientMeetingTime24('10:00');
     } else {
       setSelectedPersonId(null);
       setContactSearch('');
@@ -101,7 +145,7 @@ export function ScheduleMeetingModal({
       // Default city: New York
       applyCityTime(WORLD_CITIES[0]);
     }
-  }, [initialMeeting, isOpen]);
+  }, [initialMeeting, initialPerson, isOpen, handleSelectContact, applyCityTime]);
 
   // Matching contacts for search
   const filteredContacts = useMemo(() => {
@@ -130,44 +174,6 @@ export function ScheduleMeetingModal({
       return matchCity || matchCountry || matchState || matchAbbr;
     }).slice(0, 15);
   }, [citySearchQuery]);
-
-  // Select contact & auto-fetch city from city OR NICHE section
-  const handleSelectContact = (p: typeof people[0]) => {
-    setSelectedPersonId(p.id);
-    setBusinessName(p.businessName);
-    setClientName(p.contactName || '');
-    setPhone(p.phones[0] || '');
-    setEmail(p.emails[0] || '');
-    setContactSearch(`${p.businessName}${p.contactName ? ` (${p.contactName})` : ''}`);
-
-    // Check contact.city first
-    let matchedCity: WorldCity | undefined;
-    if (p.city && p.city.trim()) {
-      matchedCity = WORLD_CITIES.find(
-        (c) => c.city.toLowerCase() === p.city.trim().toLowerCase()
-      );
-    }
-
-    // Check contact.niche if not found
-    if (!matchedCity && p.niche && p.niche.trim()) {
-      const nicheLower = p.niche.toLowerCase();
-      // Look for any world city contained inside the niche string (e.g. "Dentists in Dallas" -> Dallas)
-      matchedCity = WORLD_CITIES.find((c) => nicheLower.includes(c.city.toLowerCase()));
-    }
-
-    // Also check businessName just in case (e.g. "Austin Roofing Pros")
-    if (!matchedCity && p.businessName) {
-      const bLower = p.businessName.toLowerCase();
-      matchedCity = WORLD_CITIES.find((c) => bLower.includes(c.city.toLowerCase()));
-    }
-
-    if (matchedCity) {
-      applyCityTime(matchedCity);
-    } else {
-      // Keep selectedCity, refresh live time
-      applyCityTime(selectedCity);
-    }
-  };
 
   // When user selects a city from search dropdown
   const handleSelectCity = (c: WorldCity) => {
@@ -286,7 +292,7 @@ export function ScheduleMeetingModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
       <div
         className={`w-full max-w-md flex flex-col rounded-xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}

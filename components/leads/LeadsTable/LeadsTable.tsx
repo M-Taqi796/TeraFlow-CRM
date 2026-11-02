@@ -66,16 +66,16 @@ export function LeadsTable({
 
       {/* Table Container */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[760px]">
+        <table className="w-full text-left border-collapse min-w-[850px]">
           <thead>
             <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-              <th className="py-3 px-4">Business & Contact</th>
-              <th className="py-3 px-4">Phone</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Value</th>
-              <th className="py-3 px-4">Priority</th>
-              <th className="py-3 px-4">Assigned To</th>
-              <th className="py-3 px-4">Stage</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[190px]">Business & Contact</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[140px]">Phone</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[170px]">Email</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[110px]">Value</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[100px]">Priority</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Assigned To</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[120px]">Stage</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">

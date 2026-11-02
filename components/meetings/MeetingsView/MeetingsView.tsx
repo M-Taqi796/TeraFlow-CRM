@@ -265,15 +265,15 @@ export function MeetingsView() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[850px]">
                 <thead>
                   <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-                    <th className="py-3 px-4 whitespace-nowrap">Company / Client</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Contact</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Their Time</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Our Time (PKT)</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Status</th>
-                    <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
+                    <th className="py-3 px-4 whitespace-nowrap min-w-[200px]">Company / Client</th>
+                    <th className="py-3 px-4 whitespace-nowrap min-w-[150px]">Contact</th>
+                    <th className="py-3 px-4 whitespace-nowrap min-w-[140px]">Their Time</th>
+                    <th className="py-3 px-4 whitespace-nowrap min-w-[140px]">Our Time (PKT)</th>
+                    <th className="py-3 px-4 whitespace-nowrap min-w-[120px]">Status</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap min-w-[100px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${theme.divide}`}>

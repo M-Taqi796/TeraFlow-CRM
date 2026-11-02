@@ -257,16 +257,16 @@ export function TasksView() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[850px]">
               <thead>
                 <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
                   <th className="py-3 px-3 w-8"></th>
-                  <th className="py-3 px-3.5 whitespace-nowrap">Task</th>
-                  <th className="py-3 px-3.5 whitespace-nowrap">Assigned By</th>
-                  <th className="py-3 px-3.5 whitespace-nowrap">Assigned To</th>
-                  <th className="py-3 px-3.5 whitespace-nowrap">Due Date & Time</th>
-                  <th className="py-3 px-3.5 whitespace-nowrap">Status</th>
-                  <th className="py-3 px-3.5 text-right whitespace-nowrap">Actions</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[220px]">Task</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Assigned By</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Assigned To</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[160px]">Due Date & Time</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[100px]">Status</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[100px]">Actions</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${theme.divide}`}>
@@ -304,7 +304,7 @@ export function TasksView() {
                             title={`Only ${t.assignedTo || 'assignee'} can mark this task complete`}
                           >
                             {isCompleted ? (
-                              <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                              <CheckBadgeIcon className="w-4 h-4 text-primary shrink-0" />
                             ) : (
                               <div className="w-4 h-4 rounded border border-slate-300 dark:border-zinc-600 bg-slate-100 dark:bg-zinc-800" />
                             )}
@@ -317,21 +317,21 @@ export function TasksView() {
                             title={isCompleted ? 'Mark as pending' : 'Mark as completed'}
                           >
                             {isCompleted ? (
-                              <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                              <CheckBadgeIcon className="w-4 h-4 text-primary shrink-0" />
                             ) : (
-                              <div className="w-4 h-4 rounded border border-slate-300 dark:border-zinc-600 hover:border-emerald-500 transition-colors" />
+                              <div className="w-4 h-4 rounded border border-slate-300 dark:border-zinc-600 hover:border-primary transition-colors" />
                             )}
                           </button>
                         )}
                       </td>
 
-                      {/* Task Title */}
-                      <td className="py-2.5 px-3 max-w-md">
-                        <span className={`font-semibold ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : theme.textMain}`}>
+                      {/* Task Title - No line-through for clear visibility */}
+                      <td className="py-2.5 px-3 whitespace-nowrap max-w-md">
+                        <span className={`font-semibold ${theme.textMain}`}>
                           {t.title}
                         </span>
                         {t.completionComment && (
-                          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 italic">
+                          <p className="text-[11px] text-primary dark:text-blue-400 mt-0.5 italic">
                             Note: {t.completionComment}
                           </p>
                         )}
@@ -351,15 +351,15 @@ export function TasksView() {
                         </span>
                       </td>
 
-                      {/* Due Date & Time - Prominent bold black text */}
-                      <td className="py-2.5 px-3.5 whitespace-nowrap text-xs font-bold text-slate-900 dark:text-zinc-100">
+                      {/* Due Date & Time */}
+                      <td className={`py-2.5 px-3.5 whitespace-nowrap text-xs ${theme.textMain} font-medium`}>
                         {t.dueAt}
                       </td>
 
                       {/* Status (Color on text only) */}
                       <td className="py-2.5 px-3.5 whitespace-nowrap text-[11px]">
                         {isCompleted ? (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                          <span className="text-primary font-semibold">
                             Completed
                           </span>
                         ) : (
@@ -457,7 +457,7 @@ export function TasksView() {
               <button
                 type="button"
                 onClick={handleConfirmCompletion}
-                className="px-3 py-1 rounded text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                className="px-3 py-1 rounded text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer"
               >
                 Mark Completed
               </button>

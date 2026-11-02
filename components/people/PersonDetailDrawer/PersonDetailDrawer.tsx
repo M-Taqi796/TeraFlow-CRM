@@ -15,7 +15,9 @@ import {
   GlobeAltIcon,
   MapPinIcon,
   FunnelIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
+import { ScheduleMeetingModal } from '@/components/meetings/ScheduleMeetingModal/ScheduleMeetingModal';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type {
@@ -54,6 +56,7 @@ export function PersonDetailDrawer({
 
   // Mode: none, call, email, note
   const [actionMode, setActionMode] = useState<ActionMode>('none');
+  const [isScheduleMeetingOpen, setIsScheduleMeetingOpen] = useState(false);
 
   // Editing Company & Person Name
   const [isEditingNames, setIsEditingNames] = useState(false);
@@ -642,7 +645,7 @@ export function PersonDetailDrawer({
         className={`relative w-full max-w-4xl max-h-[90vh] ${theme.bgPanel} border ${theme.border} rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden animate-in zoom-in-95 fade-in duration-200`}
       >
         {/* Top Header */}
-        <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900`}>
+        <div className={`px-6 py-4 border-b ${theme.border} flex items-center justify-between shrink-0 ${theme.bgPanel}`}>
           {/* Company & Name (Company on Top) */}
           <div className="flex-1 min-w-0 pr-4">
             {isEditingNames ? (
@@ -706,8 +709,20 @@ export function PersonDetailDrawer({
             )}
           </div>
 
-          {/* Right Header Controls: Stage + Bin + Close */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Right Header Controls: Schedule Meeting + Stage + Bin + Close */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Quick Schedule Meeting Button in Header */}
+            <button
+              type="button"
+              onClick={() => setIsScheduleMeetingOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-600 transition-colors cursor-pointer shadow-xs"
+              title="Schedule a meeting with this contact"
+            >
+              <CalendarDaysIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Schedule Meeting</span>
+              <span className="sm:hidden">Meeting</span>
+            </button>
+
             {/* Stage Selector */}
             <select
               value={person.stage}
@@ -753,7 +768,7 @@ export function PersonDetailDrawer({
           {/* Left Column (5 cols): Contact Info, Tags, Overview Notes, Niche & City */}
           <div className="md:col-span-5 space-y-5">
             {/* Contact Info Card */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgPanel} space-y-3`}>
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
                   Contact Info
@@ -823,7 +838,7 @@ export function PersonDetailDrawer({
               <div className="space-y-1 text-xs">
                 {/* Primary & Additional Phones */}
                 {person.phones.map((ph, idx) => (
-                  <div key={`phone-${idx}`} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
+                  <div key={`phone-${idx}`} className={`p-2 rounded-lg ${theme.hoverBg} group transition-colors`}>
                     {editingPhoneIdx === idx ? (
                       <div className="flex items-center gap-1.5">
                         <input
@@ -891,7 +906,7 @@ export function PersonDetailDrawer({
 
                 {/* Primary & Additional Emails */}
                 {person.emails.map((em, idx) => (
-                  <div key={`email-${idx}`} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
+                  <div key={`email-${idx}`} className={`p-2 rounded-lg ${theme.hoverBg} group transition-colors`}>
                     {editingEmailIdx === idx ? (
                       <div className="flex items-center gap-1.5">
                         <input
@@ -959,7 +974,7 @@ export function PersonDetailDrawer({
 
                 {/* Dynamic Contact Fields (Website, Social, Address, etc.) */}
                 {(person.contactFields || []).map((cf) => (
-                  <div key={cf.id} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/50 group transition-colors">
+                  <div key={cf.id} className={`p-2 rounded-lg ${theme.hoverBg} group transition-colors`}>
                     {editingFieldId === cf.id ? (
                       <div className="space-y-1.5">
                         <input
@@ -1040,7 +1055,7 @@ export function PersonDetailDrawer({
             </div>
 
             {/* Tags Box */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgPanel} space-y-3`}>
               <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain} block`}>
                 Tags
               </span>
@@ -1071,7 +1086,7 @@ export function PersonDetailDrawer({
 
               {/* 2. Suggestions (all other tags in DB) */}
               {suggestedTags.length > 0 && (
-                <div className="space-y-1.5 pt-1 border-t border-slate-200 dark:border-zinc-800">
+                <div className={`space-y-1.5 pt-1 border-t ${theme.border}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Suggestions (Click to add)
                   </span>
@@ -1117,7 +1132,7 @@ export function PersonDetailDrawer({
             </div>
 
             {/* Niche & Location (Editable) */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2.5 text-xs">
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgPanel} space-y-2.5 text-xs`}>
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-bold uppercase tracking-wider ${theme.textMain}`}>
                   Niche & Location
@@ -1341,6 +1356,16 @@ export function PersonDetailDrawer({
                     <EnvelopeIcon className="w-3.5 h-3.5" />
                     <span>Log Email</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsScheduleMeetingOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/5 dark:hover:bg-primary/20 transition-colors cursor-pointer"
+                    title="Schedule a meeting with this contact"
+                  >
+                    <CalendarDaysIcon className="w-3.5 h-3.5" />
+                    <span>Schedule Meeting</span>
+                  </button>
                 </div>
               </div>
 
@@ -1527,7 +1552,7 @@ export function PersonDetailDrawer({
                     <div
                       className={`absolute right-0 mt-1.5 w-56 rounded-xl border ${theme.border} ${theme.bgPanel} shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100`}
                     >
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-zinc-800">
+                      <div className={`flex items-center justify-between pb-2 mb-2 border-b ${theme.border}`}>
                         <span className={`text-[11px] font-bold ${theme.textMain} uppercase tracking-wider`}>
                           Timeline Filters
                         </span>
@@ -1567,11 +1592,11 @@ export function PersonDetailDrawer({
                   No activities matching your selected filters.
                 </div>
               ) : (
-                <div className="relative pl-6 space-y-3.5 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-zinc-800">
+                <div className={`relative pl-6 space-y-3.5 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-[#333338]`}>
                   {filteredActivities.map((act) => (
                     <div key={act.id} className="relative group">
                       {/* Node icon */}
-                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                      <div className={`absolute -left-6 top-1 w-5 h-5 rounded-full ${theme.bgPanel} border ${theme.border} flex items-center justify-center shrink-0`}>
                         {getActivityIcon(act.type)}
                       </div>
 
@@ -1602,6 +1627,15 @@ export function PersonDetailDrawer({
           </div>
         </div>
       </div>
+
+      {/* Schedule Meeting Popup from inside Contact Profile */}
+      {isScheduleMeetingOpen && (
+        <ScheduleMeetingModal
+          isOpen={isScheduleMeetingOpen}
+          onClose={() => setIsScheduleMeetingOpen(false)}
+          initialPerson={person}
+        />
+      )}
     </div>
   );
 }

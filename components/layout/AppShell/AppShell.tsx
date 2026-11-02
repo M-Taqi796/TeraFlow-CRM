@@ -97,6 +97,7 @@ export function AppShell({
         activeTasks={activeTasks}
         completedTasks={completedTasks}
         onCompleteTask={handleTaskComplete}
+        onUncompleteTask={(task) => crm.onToggleTaskStatus(task.id)}
         isExpanded={isTaskbarExpanded}
         onExpandedChange={setIsTaskbarExpanded}
         isMobileOpen={isMobileTasksOpen}

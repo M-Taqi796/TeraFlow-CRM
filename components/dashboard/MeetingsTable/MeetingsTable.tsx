@@ -53,16 +53,16 @@ export function MeetingsTable({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[700px]">
+        <table className="w-full text-left border-collapse min-w-[850px]">
           <thead>
             <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-              <th className="py-3 px-4">Business Name</th>
-              <th className="py-3 px-4">Client Name</th>
-              <th className="py-3 px-4">Phone</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Our Time</th>
-              <th className="py-3 px-4">Their Time</th>
-              <th className="py-3 px-4">Status</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[180px]">Business Name</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[140px]">Client Name</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[140px]">Phone</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[180px]">Email</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Our Time</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Their Time</th>
+              <th className="py-3 px-4 whitespace-nowrap min-w-[120px]">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">

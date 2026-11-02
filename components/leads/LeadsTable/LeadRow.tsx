@@ -58,7 +58,7 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
       onClick={() => onRowClick(l)}
     >
       {/* Business + Contact */}
-      <td className="py-3.5 px-4">
+      <td className="py-3.5 px-4 whitespace-nowrap">
         <p className={`text-sm font-semibold ${theme.textMain} fira-sans-semibold`}>{l.businessName}</p>
         <p className={`text-xs ${theme.textMuted} mt-0.5`}>{l.contactName}</p>
       </td>

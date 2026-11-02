@@ -1,13 +1,16 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { Task } from '@/types/task.types';
 import { TaskList } from '../../tasks/TaskList';
+import { TaskCompleteModal } from '../../tasks/TaskCompleteModal';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useCRM } from '@/context/CRMContext';
 
 interface TaskbarProps {
   activeTasks: Task[];
   completedTasks: Task[];
-  onCompleteTask: (task: Task) => void;
+  onCompleteTask?: (task: Task) => void;
+  onUncompleteTask?: (task: Task) => void;
   /** Desktop expand/collapse */
   isExpanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
@@ -111,19 +114,42 @@ export function Taskbar({
   activeTasks,
   completedTasks,
   onCompleteTask,
+  onUncompleteTask,
   isExpanded,
   onExpandedChange,
   isMobileOpen,
   onMobileClose,
 }: TaskbarProps) {
   const { theme } = useThemeContext();
+  const crm = useCRM();
   const activeCount = activeTasks.length;
+
+  const [taskToComplete, setTaskToComplete] = useState<Task | null>(null);
+
+  const handleRequestComplete = (task: Task) => {
+    setTaskToComplete(task);
+  };
+
+  const handleConfirmComplete = (comment: string) => {
+    if (!taskToComplete) return;
+    crm.onCompleteTask(taskToComplete.id, comment);
+    setTaskToComplete(null);
+  };
+
+  const handleUncomplete = (task: Task) => {
+    if (onUncompleteTask) {
+      onUncompleteTask(task);
+    } else {
+      crm.onToggleTaskStatus(task.id);
+    }
+  };
 
   const taskListContent: ReactNode = (
     <TaskList
       activeTasks={activeTasks}
       completedTasks={completedTasks}
-      onCompleteTask={onCompleteTask}
+      onCompleteTask={handleRequestComplete}
+      onUncompleteTask={handleUncomplete}
     />
   );
 
@@ -169,6 +195,15 @@ export function Taskbar({
         />
         <div className="flex-1 overflow-y-auto p-4">{taskListContent}</div>
       </aside>
+
+      {/* Task Complete Modal asking for optional comment */}
+      {taskToComplete && (
+        <TaskCompleteModal
+          task={taskToComplete}
+          onConfirm={handleConfirmComplete}
+          onClose={() => setTaskToComplete(null)}
+        />
+      )}
     </>
   );
 }

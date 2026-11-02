@@ -28,13 +28,13 @@ export function TaskCompleteModal({
       >
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-2 text-primary">
             <div
               className={`w-8 h-8 rounded-full ${
-                isDarkMode ? 'bg-emerald-950/70' : 'bg-emerald-100'
+                isDarkMode ? 'bg-primary/20' : 'bg-primary/10'
               } flex items-center justify-center`}
             >
-              <CheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <CheckIcon className="w-5 h-5 text-primary" />
             </div>
             <h3 className={`font-bold text-base ${theme.textMain} fira-sans-bold`}>
               Complete Task
@@ -85,7 +85,7 @@ export function TaskCompleteModal({
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-600 rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
           >
             <CheckIcon className="w-4 h-4" />
             Mark as Done

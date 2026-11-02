@@ -239,13 +239,13 @@ export function CallsView() {
           <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-                <th className="py-3 px-4 min-w-[180px]">Business Name</th>
-                <th className="py-3 px-4 min-w-[140px]">Person Name</th>
-                <th className="py-3 px-4 min-w-[150px]">Phone Number</th>
-                <th className="py-3 px-4 min-w-[130px]">Call Status</th>
-                <th className="py-3 px-4 min-w-[150px]">Date & Time</th>
-                <th className="py-3 px-4 min-w-[220px]">Comment</th>
-                <th className="py-3 px-4 w-20 text-center">Actions</th>
+                <th className="py-3 px-4 min-w-[180px] whitespace-nowrap">Business Name</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Person Name</th>
+                <th className="py-3 px-4 min-w-[150px] whitespace-nowrap">Phone Number</th>
+                <th className="py-3 px-4 min-w-[130px] whitespace-nowrap">Call Status</th>
+                <th className="py-3 px-4 min-w-[150px] whitespace-nowrap">Date & Time</th>
+                <th className="py-3 px-4 min-w-[220px] whitespace-nowrap">Comment</th>
+                <th className="py-3 px-4 w-20 text-center whitespace-nowrap">Actions</th>
               </tr>
             </thead>
 
@@ -268,12 +268,12 @@ export function CallsView() {
                     className={`transition-colors border-b border-slate-200 dark:border-zinc-800 ${theme.rowHover}`}
                   >
                     {/* Business Name */}
-                    <td className={`py-3 px-4 font-semibold ${theme.textMain}`}>
+                    <td className={`py-3 px-4 font-semibold ${theme.textMain} whitespace-nowrap`}>
                       {log.businessName}
                     </td>
 
                     {/* Person Name */}
-                    <td className={`py-3 px-4 ${theme.textMuted}`}>
+                    <td className={`py-3 px-4 ${theme.textMuted} whitespace-nowrap`}>
                       {log.contactName || '—'}
                     </td>
 

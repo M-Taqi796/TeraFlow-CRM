@@ -221,14 +221,14 @@ export function OutreachView() {
           <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-                <th className="py-3 px-4 min-w-[170px]">Business Name</th>
-                <th className="py-3 px-4 min-w-[130px]">Person Name</th>
-                <th className="py-3 px-4 min-w-[170px]">Email Address</th>
-                <th className="py-3 px-4 min-w-[90px]">Type</th>
-                <th className="py-3 px-4 min-w-[200px]">Subject</th>
-                <th className="py-3 px-4 min-w-[140px]">Date & Time</th>
-                <th className="py-3 px-4 min-w-[200px]">Comment / Summary</th>
-                <th className="py-3 px-4 w-20 text-center">Actions</th>
+                <th className="py-3 px-4 min-w-[170px] whitespace-nowrap">Business Name</th>
+                <th className="py-3 px-4 min-w-[130px] whitespace-nowrap">Person Name</th>
+                <th className="py-3 px-4 min-w-[170px] whitespace-nowrap">Email Address</th>
+                <th className="py-3 px-4 min-w-[90px] whitespace-nowrap">Type</th>
+                <th className="py-3 px-4 min-w-[200px] whitespace-nowrap">Subject</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Date & Time</th>
+                <th className="py-3 px-4 min-w-[200px] whitespace-nowrap">Comment / Summary</th>
+                <th className="py-3 px-4 w-20 text-center whitespace-nowrap">Actions</th>
               </tr>
             </thead>
 
@@ -251,12 +251,12 @@ export function OutreachView() {
                     className={`transition-colors border-b border-slate-200 dark:border-zinc-800 ${theme.rowHover}`}
                   >
                     {/* Business Name */}
-                    <td className={`py-3 px-4 font-semibold ${theme.textMain}`}>
+                    <td className={`py-3 px-4 font-semibold ${theme.textMain} whitespace-nowrap`}>
                       {log.businessName}
                     </td>
 
                     {/* Person Name */}
-                    <td className={`py-3 px-4 ${theme.textMuted}`}>
+                    <td className={`py-3 px-4 ${theme.textMuted} whitespace-nowrap`}>
                       {log.contactName || '—'}
                     </td>
 

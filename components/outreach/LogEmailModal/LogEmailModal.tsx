@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { XMarkIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
-import { EMAIL_TYPE_OPTIONS, type EmailTypeOption } from '@/types/person.types';
+import { EMAIL_TYPE_OPTIONS, type EmailTypeOption, type Person } from '@/types/person.types';
 
 export interface EmailLogRecord {
   id: string; // activity id
@@ -26,11 +26,26 @@ interface LogEmailModalProps {
   initialLog?: EmailLogRecord | null;
 }
 
+function getLocalCurrentDateTime(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProps) {
   const { theme } = useThemeContext();
   const { people, onAddEmailLog, onEditEmailLog } = useCRM();
 
   const isEditing = Boolean(initialLog);
+
+  // Search & Contact States
+  const [contactSearch, setContactSearch] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const contactDropdownRef = useRef<HTMLDivElement>(null);
 
   // Form State
   const [selectedPersonId, setSelectedPersonId] = useState<string>('');
@@ -42,6 +57,17 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
   const [comment, setComment] = useState('');
   const [dateTime, setDateTime] = useState('');
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Sync state on open/edit
   useEffect(() => {
     if (initialLog) {
@@ -52,13 +78,23 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
       setEmailType(initialLog.emailType || 'Sent');
       setSubject(initialLog.subject || '');
       setComment(initialLog.comment || '');
+      setContactSearch(initialLog.businessName || '');
+      setIsDropdownOpen(false);
+
       if (initialLog.timestamp) {
         try {
           const d = new Date(initialLog.timestamp);
-          setDateTime(d.toISOString().slice(0, 16));
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const hours = String(d.getHours()).padStart(2, '0');
+          const minutes = String(d.getMinutes()).padStart(2, '0');
+          setDateTime(`${year}-${month}-${day}T${hours}:${minutes}`);
         } catch {
-          setDateTime('');
+          setDateTime(getLocalCurrentDateTime());
         }
+      } else {
+        setDateTime(getLocalCurrentDateTime());
       }
     } else {
       setSelectedPersonId('');
@@ -68,31 +104,50 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
       setEmailType('Sent');
       setSubject('');
       setComment('');
-      setDateTime(new Date().toISOString().slice(0, 16));
+      setContactSearch('');
+      setIsDropdownOpen(false);
+      // Automatically fetch current date and time
+      setDateTime(getLocalCurrentDateTime());
     }
   }, [initialLog, isOpen]);
 
-  // When selecting an existing contact from dropdown
-  const handleSelectPerson = (personId: string) => {
-    setSelectedPersonId(personId);
-    if (!personId) {
-      setBusinessName('');
-      setContactName('');
-      setEmail('');
-      return;
-    }
-    const found = people.find((p) => p.id === personId);
-    if (found) {
-      setBusinessName(found.businessName);
-      setContactName(found.contactName || '');
-      setEmail(found.emails[0] || '');
-    }
+  // Matching contacts for search
+  const filteredContacts = useMemo(() => {
+    if (!contactSearch.trim() || selectedPersonId) return [];
+    const q = contactSearch.toLowerCase();
+    return people
+      .filter((p) => {
+        const matchesBusiness = p.businessName?.toLowerCase().includes(q);
+        const matchesName = p.contactName?.toLowerCase().includes(q);
+        const matchesPhone = p.phones?.some((ph) => ph.toLowerCase().includes(q));
+        const matchesEmail = p.emails?.some((em) => em.toLowerCase().includes(q));
+        return matchesBusiness || matchesName || matchesPhone || matchesEmail;
+      })
+      .slice(0, 6);
+  }, [contactSearch, people, selectedPersonId]);
+
+  const handleSelectContact = (p: Person) => {
+    setSelectedPersonId(p.id);
+    setBusinessName(p.businessName);
+    setContactName(p.contactName || '');
+    setEmail(p.emails[0] || '');
+    setContactSearch(`${p.businessName}${p.contactName ? ` (${p.contactName})` : ''}`);
+    setIsDropdownOpen(false);
+  };
+
+  const handleClearContact = () => {
+    setSelectedPersonId('');
+    setBusinessName('');
+    setContactName('');
+    setEmail('');
+    setContactSearch('');
+    setIsDropdownOpen(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!businessName.trim()) {
-      alert('Business Name is required.');
+      alert('Please search and select a contact first.');
       return;
     }
     if (!subject.trim()) {
@@ -147,71 +202,94 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
         </div>
 
         {/* Form Body */}
-        <form id="email-log-form" onSubmit={handleSubmit} className="p-5 space-y-3.5 overflow-y-auto">
-          {/* Select Existing Contact or Type */}
-          {!isEditing && (
-            <div className="space-y-1">
-              <label className={`text-[11px] font-semibold ${theme.textMuted} block`}>
-                Select Contact (Optional)
+        <form id="email-log-form" onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
+          {/* Search Contact with autocomplete suggestions */}
+          {!isEditing ? (
+            <div className="space-y-1 relative" ref={contactDropdownRef}>
+              <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
+                Search Contact <span className="text-rose-500">*</span>
               </label>
-              <select
-                value={selectedPersonId}
-                onChange={(e) => handleSelectPerson(e.target.value)}
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
-              >
-                <option value="">-- Choose Existing Contact or enter new below --</option>
-                {people.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.businessName} {p.contactName ? `(${p.contactName})` : ''} — {p.emails[0] || 'No email'}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={contactSearch}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  onChange={(e) => {
+                    setContactSearch(e.target.value);
+                    setSelectedPersonId('');
+                    setIsDropdownOpen(true);
+                  }}
+                  placeholder="Search business, contact name, or email..."
+                  className={`w-full text-xs p-2 pl-8 pr-7 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+                />
+                <MagnifyingGlassIcon className={`w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 ${theme.textSubtle}`} />
+                {contactSearch && (
+                  <button
+                    type="button"
+                    onClick={handleClearContact}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer p-0.5"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Suggestions dropdown */}
+              {isDropdownOpen && filteredContacts.length > 0 && !selectedPersonId && (
+                <div className={`absolute z-30 left-0 right-0 top-full mt-1 rounded-lg border ${theme.border} ${theme.bgPanel} shadow-xl overflow-hidden divide-y ${theme.divide} max-h-56 overflow-y-auto`}>
+                  {filteredContacts.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handleSelectContact(p)}
+                      className={`w-full px-3 py-2 text-left text-xs ${theme.hoverBg} flex items-center justify-between cursor-pointer`}
+                    >
+                      <div>
+                        <span className={`font-semibold ${theme.textMain}`}>
+                          {p.businessName}
+                        </span>
+                        {p.contactName && (
+                          <span className={`text-[11px] ${theme.textMuted} ml-1.5`}>
+                            · {p.contactName}
+                          </span>
+                        )}
+                        <p className={`text-[10px] ${theme.textMuted}`}>
+                          {p.emails[0] || p.phones[0] || p.niche || p.city || 'No direct email'}
+                        </p>
+                      </div>
+                      {(p.city || p.niche) && (
+                        <span className="text-[10px] text-slate-400 border border-slate-200 dark:border-zinc-700 px-1.5 py-0.5 rounded">
+                          {p.city || p.niche}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {/* Auto-filled details in single clean line if contact selected or editing */}
+          {businessName && (
+            <div className={`px-3 py-2 rounded-lg border ${theme.border} text-xs ${theme.textMuted} flex items-center justify-between bg-primary/5`}>
+              <span className="truncate">
+                <strong className={theme.textMain}>{businessName}</strong>
+                {contactName && ` · ${contactName}`}
+                {email && ` · ${email}`}
+              </span>
+              {!isEditing ? (
+                <button
+                  type="button"
+                  onClick={handleClearContact}
+                  className={`text-[11px] text-slate-400 hover:${theme.textMain} ml-2 underline cursor-pointer shrink-0`}
+                >
+                  Change
+                </button>
+              ) : (
+                <CheckIcon className="w-4 h-4 text-primary shrink-0 ml-2" />
+              )}
             </div>
           )}
-
-          {/* Business Name */}
-          <div className="space-y-1">
-            <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
-              Company / Business Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="e.g. Skyline Dental, Apex Roofing"
-              className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} font-semibold focus:outline-none focus:border-primary`}
-            />
-          </div>
-
-          {/* Person Name & Email Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
-                Person Name
-              </label>
-              <input
-                type="text"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="e.g. Dr. Arthur Bell"
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. arthur@skyline.com"
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-              />
-            </div>
-          </div>
 
           {/* Email Type & Date/Time Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -233,9 +311,12 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
             </div>
 
             <div className="space-y-1">
-              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
-                Date & Time
-              </label>
+              <div className="flex items-center justify-between">
+                <label className={`text-[11px] font-semibold ${theme.textMain} block`}>
+                  Date & Time
+                </label>
+                <span className="text-[10px] text-primary font-medium">Auto-fetched current time</span>
+              </div>
               <input
                 type="datetime-local"
                 value={dateTime}
