@@ -36,6 +36,46 @@ interface CRMContextType {
   onBulkDelete: (ids: string[]) => void;
   onMeetingStatusChange: (id: string, status: MeetingStatus) => void;
   onCompleteTask: (taskId: string, comment: string) => void;
+  onAddCallLog: (data: {
+    personId?: string;
+    businessName: string;
+    contactName?: string;
+    phone: string;
+    callStatus: string;
+    comment: string;
+    timestamp?: string;
+  }) => void;
+  onEditCallLog: (
+    activityId: string,
+    data: {
+      callStatus: string;
+      comment: string;
+      phone?: string;
+      timestamp?: string;
+    }
+  ) => void;
+  onDeleteCallLog: (activityId: string) => void;
+  onAddEmailLog: (data: {
+    personId?: string;
+    businessName: string;
+    contactName?: string;
+    email: string;
+    emailType: 'Sent' | 'Reply';
+    subject: string;
+    comment: string;
+    timestamp?: string;
+  }) => void;
+  onEditEmailLog: (
+    activityId: string,
+    data: {
+      emailType: 'Sent' | 'Reply';
+      subject: string;
+      comment: string;
+      email?: string;
+      timestamp?: string;
+    }
+  ) => void;
+  onDeleteEmailLog: (activityId: string) => void;
   onLogout: () => void;
 }
 
@@ -83,11 +123,24 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   const activeTasks    = useMemo(() => tasks.filter((t) => t.status === 'TODO'), [tasks]);
   const completedTasks = useMemo(() => tasks.filter((t) => t.status === 'COMPLETED'), [tasks]);
 
-  const navCounts: Record<string, number> = useMemo(() => ({
-    People:   people.length,
-    Tasks:    activeTasks.length,
-    Meetings: meetings.filter((m) => m.status === 'Scheduled').length,
-  }), [people.length, activeTasks.length, meetings]);
+  const navCounts: Record<string, number> = useMemo(() => {
+    let callCount = 0;
+    let emailCount = 0;
+    people.forEach((p) => {
+      (p.activities || []).forEach((a) => {
+        if (a.type === 'call') callCount++;
+        if (a.type === 'email') emailCount++;
+      });
+    });
+
+    return {
+      People:          people.length,
+      Tasks:           activeTasks.length,
+      Meetings:        meetings.filter((m) => m.status === 'Scheduled').length,
+      'Call Log':      callCount,
+      'Email Outreach': emailCount,
+    };
+  }, [people, activeTasks.length, meetings]);
 
   const handlePersonStageChange = (id: string, stage: PersonStage) => {
     setPeople((prev) =>
@@ -196,6 +249,300 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  // ── Call Log Handlers ──
+  const handleAddCallLog = (data: {
+    personId?: string;
+    businessName: string;
+    contactName?: string;
+    phone: string;
+    callStatus: string;
+    comment: string;
+    timestamp?: string;
+  }) => {
+    const actId = `act-${Date.now()}`;
+    const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
+    const formattedDate = targetDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const newAct = {
+      id: actId,
+      type: 'call' as const,
+      title: `Phone Call (${data.callStatus})`,
+      callStatus: data.callStatus,
+      description: data.comment.trim() || undefined,
+      timestamp: targetDate.toISOString(),
+      relativeTime: formattedDate,
+      author: 'Muhammad Taqi',
+    };
+
+    setPeople((prev) => {
+      if (data.personId && prev.some((p) => p.id === data.personId)) {
+        return prev.map((p) => {
+          if (p.id !== data.personId) return p;
+          const cleanPhone = data.phone.trim();
+          const phones = cleanPhone && !p.phones.includes(cleanPhone)
+            ? [...p.phones, cleanPhone]
+            : p.phones;
+          return {
+            ...p,
+            phones,
+            lastActivity: {
+              type: 'call',
+              summary: `Call: ${data.callStatus} — ${(data.comment || '').slice(0, 40)}`,
+              timestamp: targetDate.toISOString(),
+              relativeTime: formattedDate,
+            },
+            activities: [newAct, ...(p.activities || [])],
+          };
+        });
+      }
+
+      const existingMatch = prev.find(
+        (p) => p.businessName.toLowerCase() === data.businessName.trim().toLowerCase()
+      );
+      if (existingMatch) {
+        return prev.map((p) => {
+          if (p.id !== existingMatch.id) return p;
+          const cleanPhone = data.phone.trim();
+          const phones = cleanPhone && !p.phones.includes(cleanPhone)
+            ? [...p.phones, cleanPhone]
+            : p.phones;
+          return {
+            ...p,
+            phones,
+            activities: [newAct, ...(p.activities || [])],
+          };
+        });
+      }
+
+      const newPerson: Person = {
+        id: `p-${Date.now()}`,
+        businessName: data.businessName.trim() || 'Unassigned Contact',
+        contactName: data.contactName?.trim() || '',
+        phones: [data.phone.trim()].filter(Boolean),
+        emails: [],
+        contactFields: [],
+        tags: ['New Lead'],
+        niche: 'General',
+        city: 'United States',
+        stage: 'Contacted',
+        notes: `Initial call logged on ${formattedDate}.`,
+        createdAt: 'Just now',
+        activities: [newAct],
+      };
+      return [newPerson, ...prev];
+    });
+  };
+
+  const handleEditCallLog = (
+    activityId: string,
+    data: {
+      callStatus: string;
+      comment: string;
+      phone?: string;
+      timestamp?: string;
+    }
+  ) => {
+    setPeople((prev) =>
+      prev.map((p) => {
+        const hasAct = p.activities?.some((a) => a.id === activityId);
+        if (!hasAct) return p;
+
+        const updatedActivities = p.activities.map((a) => {
+          if (a.id !== activityId) return a;
+          const targetDate = data.timestamp ? new Date(data.timestamp) : new Date(a.timestamp);
+          return {
+            ...a,
+            callStatus: data.callStatus,
+            title: `Phone Call (${data.callStatus})`,
+            description: data.comment.trim() || undefined,
+            timestamp: targetDate.toISOString(),
+          };
+        });
+
+        let updatedPhones = p.phones;
+        if (data.phone && data.phone.trim()) {
+          const ph = data.phone.trim();
+          if (!updatedPhones.includes(ph)) {
+            updatedPhones = [ph, ...updatedPhones.slice(1)];
+          }
+        }
+
+        return {
+          ...p,
+          phones: updatedPhones,
+          activities: updatedActivities,
+        };
+      })
+    );
+  };
+
+  const handleDeleteCallLog = (activityId: string) => {
+    setPeople((prev) =>
+      prev.map((p) => {
+        const hasAct = p.activities?.some((a) => a.id === activityId);
+        if (!hasAct) return p;
+        return {
+          ...p,
+          activities: p.activities.filter((a) => a.id !== activityId),
+        };
+      })
+    );
+  };
+
+  // ── Email Log Handlers ──
+  const handleAddEmailLog = (data: {
+    personId?: string;
+    businessName: string;
+    contactName?: string;
+    email: string;
+    emailType: 'Sent' | 'Reply';
+    subject: string;
+    comment: string;
+    timestamp?: string;
+  }) => {
+    const actId = `act-${Date.now()}`;
+    const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
+    const formattedDate = targetDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const newAct = {
+      id: actId,
+      type: 'email' as const,
+      title: `Email ${data.emailType}: ${data.subject.trim()}`,
+      emailType: data.emailType,
+      emailSubject: data.subject.trim(),
+      description: data.comment.trim() || undefined,
+      timestamp: targetDate.toISOString(),
+      relativeTime: formattedDate,
+      author: 'Muhammad Taqi',
+    };
+
+    setPeople((prev) => {
+      if (data.personId && prev.some((p) => p.id === data.personId)) {
+        return prev.map((p) => {
+          if (p.id !== data.personId) return p;
+          const cleanEmail = data.email.trim();
+          const emails = cleanEmail && !p.emails.includes(cleanEmail)
+            ? [...p.emails, cleanEmail]
+            : p.emails;
+          return {
+            ...p,
+            emails,
+            lastActivity: {
+              type: 'email',
+              summary: `Email ${data.emailType}: ${data.subject.trim()}`,
+              timestamp: targetDate.toISOString(),
+              relativeTime: formattedDate,
+            },
+            activities: [newAct, ...(p.activities || [])],
+          };
+        });
+      }
+
+      const existingMatch = prev.find(
+        (p) => p.businessName.toLowerCase() === data.businessName.trim().toLowerCase()
+      );
+      if (existingMatch) {
+        return prev.map((p) => {
+          if (p.id !== existingMatch.id) return p;
+          const cleanEmail = data.email.trim();
+          const emails = cleanEmail && !p.emails.includes(cleanEmail)
+            ? [...p.emails, cleanEmail]
+            : p.emails;
+          return {
+            ...p,
+            emails,
+            activities: [newAct, ...(p.activities || [])],
+          };
+        });
+      }
+
+      const newPerson: Person = {
+        id: `p-${Date.now()}`,
+        businessName: data.businessName.trim() || 'Unassigned Contact',
+        contactName: data.contactName?.trim() || '',
+        phones: [],
+        emails: [data.email.trim()].filter(Boolean),
+        contactFields: [],
+        tags: ['New Lead'],
+        niche: 'General',
+        city: 'United States',
+        stage: 'Contacted',
+        notes: `Initial email logged on ${formattedDate}.`,
+        createdAt: 'Just now',
+        activities: [newAct],
+      };
+      return [newPerson, ...prev];
+    });
+  };
+
+  const handleEditEmailLog = (
+    activityId: string,
+    data: {
+      emailType: 'Sent' | 'Reply';
+      subject: string;
+      comment: string;
+      email?: string;
+      timestamp?: string;
+    }
+  ) => {
+    setPeople((prev) =>
+      prev.map((p) => {
+        const hasAct = p.activities?.some((a) => a.id === activityId);
+        if (!hasAct) return p;
+
+        const updatedActivities = p.activities.map((a) => {
+          if (a.id !== activityId) return a;
+          const targetDate = data.timestamp ? new Date(data.timestamp) : new Date(a.timestamp);
+          return {
+            ...a,
+            emailType: data.emailType,
+            emailSubject: data.subject.trim(),
+            title: `Email ${data.emailType}: ${data.subject.trim()}`,
+            description: data.comment.trim() || undefined,
+            timestamp: targetDate.toISOString(),
+          };
+        });
+
+        let updatedEmails = p.emails;
+        if (data.email && data.email.trim()) {
+          const em = data.email.trim();
+          if (!updatedEmails.includes(em)) {
+            updatedEmails = [em, ...updatedEmails.slice(1)];
+          }
+        }
+
+        return {
+          ...p,
+          emails: updatedEmails,
+          activities: updatedActivities,
+        };
+      })
+    );
+  };
+
+  const handleDeleteEmailLog = (activityId: string) => {
+    setPeople((prev) =>
+      prev.map((p) => {
+        const hasAct = p.activities?.some((a) => a.id === activityId);
+        if (!hasAct) return p;
+        return {
+          ...p,
+          activities: p.activities.filter((a) => a.id !== activityId),
+        };
+      })
+    );
+  };
+
   const handleLogout = () => {
     alert('Logged out successfully.');
   };
@@ -228,6 +575,12 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         onBulkDelete: handleBulkDelete,
         onMeetingStatusChange: handleMeetingStatusChange,
         onCompleteTask: handleCompleteTask,
+        onAddCallLog: handleAddCallLog,
+        onEditCallLog: handleEditCallLog,
+        onDeleteCallLog: handleDeleteCallLog,
+        onAddEmailLog: handleAddEmailLog,
+        onEditEmailLog: handleEditEmailLog,
+        onDeleteEmailLog: handleDeleteEmailLog,
         onLogout: handleLogout,
       }}
     >

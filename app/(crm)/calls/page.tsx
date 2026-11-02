@@ -1,10 +1,5 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { CallsView } from '@/components/calls/CallsView/CallsView';
 
 export default function CallsPage() {
-  return (
-    <PlaceholderView
-      title="Call Log & Dialer"
-      description="Track outgoing and incoming phone activity, call recordings, durations, and follow-up notes."
-    />
-  );
+  return <CallsView />;
 }

@@ -17,6 +17,20 @@ export type ActivityType =
   | 'contact_info'
   | 'name_change';
 
+export const CALL_STATUS_OPTIONS = [
+  'Answered',
+  'Not answered',
+  'Call failed',
+  'Busy',
+  'Left Voicemail',
+  'Wrong Number',
+] as const;
+
+export type CallStatusOption = (typeof CALL_STATUS_OPTIONS)[number];
+
+export const EMAIL_TYPE_OPTIONS = ['Sent', 'Reply'] as const;
+export type EmailTypeOption = (typeof EMAIL_TYPE_OPTIONS)[number];
+
 export interface PersonActivity {
   id: string;
   type: ActivityType;

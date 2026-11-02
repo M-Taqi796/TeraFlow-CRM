@@ -20,9 +20,9 @@ export const STATIC_NAV_ITEMS: Omit<NavItemDef, 'count'>[] = [
   { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
   { name: 'People', href: '/people', icon: UsersIcon },
   { name: 'Call Log', href: '/calls', icon: PhoneIcon },
+  { name: 'Email Outreach', href: '/outreach', icon: EnvelopeIcon },
   { name: 'Tasks', href: '/tasks', icon: CheckCircleIcon },
   { name: 'Meetings', href: '/meetings', icon: CalendarIcon },
-  { name: 'Email Outreach', href: '/outreach', icon: EnvelopeIcon },
   { name: 'Imports', href: '/imports', icon: ArrowUpTrayIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
