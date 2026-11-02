@@ -11,6 +11,7 @@ export interface Meeting {
   clientName: string;
   phone: string;
   email: string;
+  date?: string; // YYYY-MM-DD
   ourTime: string;
   theirTime: string;
   status: MeetingStatus;
