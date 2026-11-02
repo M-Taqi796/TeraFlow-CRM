@@ -267,13 +267,13 @@ export function MeetingsView() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className={`border-b ${theme.border} bg-slate-50/50 dark:bg-zinc-800/30 text-[11px] font-semibold text-slate-500 dark:text-zinc-400`}>
-                    <th className="py-2.5 px-3 whitespace-nowrap">Company / Client</th>
-                    <th className="py-2.5 px-3 whitespace-nowrap">Contact</th>
-                    <th className="py-2.5 px-3 whitespace-nowrap">Their Time</th>
-                    <th className="py-2.5 px-3 whitespace-nowrap">Our Time (PKT)</th>
-                    <th className="py-2.5 px-3 whitespace-nowrap">Status</th>
-                    <th className="py-2.5 px-2 text-right whitespace-nowrap">Actions</th>
+                  <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
+                    <th className="py-3 px-4 whitespace-nowrap">Company / Client</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Contact</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Their Time</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Our Time (PKT)</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Status</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${theme.divide}`}>

@@ -39,7 +39,7 @@ interface CRMContextType {
   onEditMeeting: (id: string, meeting: Partial<Meeting>) => void;
   onDeleteMeeting: (id: string) => void;
   onCompleteTask: (taskId: string, comment: string) => void;
-  onAddTask: (task: { title: string; assignedBy?: string; dueAt?: string; status?: 'TODO' | 'COMPLETED' }) => void;
+  onAddTask: (task: Omit<Task, 'id'> | { title: string; assignedBy?: string; assignedTo?: string; dueDate?: string; dueTime?: string; dueAt?: string; status?: 'TODO' | 'COMPLETED' }) => void;
   onEditTask: (id: string, task: Partial<Task>) => void;
   onDeleteTask: (id: string) => void;
   onToggleTaskStatus: (id: string) => void;
@@ -274,17 +274,24 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const handleAddTask = (taskData: {
+  const handleAddTask = (taskData: Omit<Task, 'id'> | {
     title: string;
     assignedBy?: string;
+    assignedTo?: string;
+    dueDate?: string;
+    dueTime?: string;
     dueAt?: string;
     status?: 'TODO' | 'COMPLETED';
   }) => {
+    const todayStr = new Date().toISOString().slice(0, 10);
     const newTask: Task = {
       id: `t-${Date.now()}`,
       title: taskData.title.trim(),
       assignedBy: taskData.assignedBy?.trim() || 'Muhammad Taqi',
-      dueAt: taskData.dueAt?.trim() || 'Today',
+      assignedTo: taskData.assignedTo?.trim() || 'Muhammad Taqi',
+      dueDate: taskData.dueDate || todayStr,
+      dueTime: taskData.dueTime || '17:00',
+      dueAt: taskData.dueAt?.trim() || 'Today, 05:00 PM',
       status: taskData.status || 'TODO',
     };
     setTasks((prev) => [newTask, ...prev]);

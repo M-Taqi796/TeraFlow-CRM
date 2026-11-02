@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type { Task } from '@/types/task.types';
+import { CURRENT_USER, TEAM_MEMBERS } from '@/types/task.types';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -19,24 +20,23 @@ export function TaskModal({ isOpen, onClose, initialTask }: TaskModalProps) {
   const isEditing = Boolean(initialTask);
 
   const [title, setTitle] = useState('');
-  const [assignedBy, setAssignedBy] = useState('Muhammad Taqi');
-  const [dueAt, setDueAt] = useState('Today, 05:00 PM');
-  const [status, setStatus] = useState<'TODO' | 'COMPLETED'>('TODO');
-  const [completionComment, setCompletionComment] = useState('');
+  const [assignedTo, setAssignedTo] = useState(CURRENT_USER.name);
+  const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('17:00');
 
   useEffect(() => {
     if (initialTask) {
       setTitle(initialTask.title || '');
-      setAssignedBy(initialTask.assignedBy || 'Muhammad Taqi');
-      setDueAt(initialTask.dueAt || 'Today');
-      setStatus(initialTask.status || 'TODO');
-      setCompletionComment(initialTask.completionComment || '');
+      setAssignedTo(initialTask.assignedTo || CURRENT_USER.name);
+      setDueDate(initialTask.dueDate || new Date().toISOString().slice(0, 10));
+      setDueTime(initialTask.dueTime || '17:00');
     } else {
       setTitle('');
-      setAssignedBy('Muhammad Taqi');
-      setDueAt('Today, 05:00 PM');
-      setStatus('TODO');
-      setCompletionComment('');
+      setAssignedTo(CURRENT_USER.name);
+      // Default due date: today
+      const today = new Date();
+      setDueDate(today.toISOString().slice(0, 10));
+      setDueTime('17:00');
     }
   }, [initialTask, isOpen]);
 
@@ -47,21 +47,38 @@ export function TaskModal({ isOpen, onClose, initialTask }: TaskModalProps) {
       return;
     }
 
+    // Format dueAt string e.g. "Nov 02, 2026 · 05:00 PM"
+    let formattedDueAt = dueDate;
+    try {
+      const [hStr, mStr] = dueTime.split(':');
+      const hours = parseInt(hStr, 10);
+      const minutes = parseInt(mStr, 10);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const h12 = hours % 12 === 0 ? 12 : hours % 12;
+      const h12Str = h12 < 10 ? '0' + h12 : h12;
+      const mStrPad = minutes < 10 ? '0' + minutes : minutes;
+      formattedDueAt = `${dueDate} · ${h12Str}:${mStrPad} ${period}`;
+    } catch {
+      formattedDueAt = `${dueDate} ${dueTime}`;
+    }
+
     if (isEditing && initialTask) {
       onEditTask(initialTask.id, {
         title: title.trim(),
-        assignedBy: assignedBy.trim(),
-        dueAt: dueAt.trim(),
-        status,
-        completionComment: status === 'COMPLETED' ? completionComment.trim() : undefined,
-        completedAt: status === 'COMPLETED' ? (initialTask.completedAt || 'Just now') : undefined,
+        assignedTo,
+        dueDate,
+        dueTime,
+        dueAt: formattedDueAt,
       });
     } else {
       onAddTask({
         title: title.trim(),
-        assignedBy: assignedBy.trim(),
-        dueAt: dueAt.trim(),
-        status,
+        assignedBy: CURRENT_USER.name, // Active user
+        assignedTo,
+        dueDate,
+        dueTime,
+        dueAt: formattedDueAt,
+        status: 'TODO', // Automatically pending
       });
     }
 
@@ -71,30 +88,30 @@ export function TaskModal({ isOpen, onClose, initialTask }: TaskModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
       <div
-        className={`w-full max-w-lg flex flex-col rounded-2xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
+        className={`w-full max-w-md flex flex-col rounded-xl border ${theme.border} ${theme.bgPanel} shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`px-5 py-3.5 border-b ${theme.border} flex items-center justify-between shrink-0`}>
-          <h2 className={`text-base font-bold tracking-tight ${theme.textMain}`}>
-            {isEditing ? 'Edit Task' : 'Create New Task'}
+        <div className={`px-4 py-3 border-b ${theme.border} flex items-center justify-between shrink-0`}>
+          <h2 className={`text-sm font-bold tracking-tight ${theme.textMain}`}>
+            {isEditing ? 'Edit Task' : 'Assign New Task'}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className={`p-1 rounded-lg ${theme.textMuted} hover:${theme.textMain} transition-colors cursor-pointer`}
+            className={`p-1 rounded-md ${theme.textMuted} hover:${theme.textMain} transition-colors cursor-pointer`}
           >
-            <XMarkIcon className="w-5 h-5" />
+            <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form id="task-modal-form" onSubmit={handleSubmit} className="p-5 space-y-3.5 overflow-y-auto">
+        <form id="task-modal-form" onSubmit={handleSubmit} className="p-4 space-y-3.5">
           {/* Title */}
           <div className="space-y-1">
-            <label className={`text-xs font-semibold ${theme.textMain} block`}>
+            <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
               Task Title <span className="text-rose-500">*</span>
             </label>
             <input
@@ -102,87 +119,75 @@ export function TaskModal({ isOpen, onClose, initialTask }: TaskModalProps) {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Call back Dr. Arthur regarding pricing sheet"
-              className={`w-full text-xs p-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} font-semibold focus:outline-none focus:border-primary`}
+              placeholder="e.g. Prepare demo slide deck for Apex Solutions"
+              className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-slate-400`}
+              autoFocus
             />
           </div>
 
-          {/* Assigned By & Due Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className={`text-xs font-medium ${theme.textMuted} block`}>
-                Assigned By / Owner
-              </label>
-              <input
-                type="text"
-                value={assignedBy}
-                onChange={(e) => setAssignedBy(e.target.value)}
-                placeholder="e.g. Muhammad Taqi"
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className={`text-xs font-medium ${theme.textMuted} block`}>
-                Due Date / Time
-              </label>
-              <input
-                type="text"
-                value={dueAt}
-                onChange={(e) => setDueAt(e.target.value)}
-                placeholder="e.g. Today, 05:00 PM / Tomorrow"
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
-              />
-            </div>
-          </div>
-
-          {/* Status */}
+          {/* Assign To (Team member) */}
           <div className="space-y-1">
-            <label className={`text-xs font-medium ${theme.textMuted} block`}>
-              Status
+            <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
+              Assign To
             </label>
             <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'TODO' | 'COMPLETED')}
-              className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none cursor-pointer`}
             >
-              <option value="TODO">Pending / To Do</option>
-              <option value="COMPLETED">Completed</option>
+              {TEAM_MEMBERS.map((tm) => (
+                <option key={tm.id} value={tm.name}>
+                  {tm.name} — {tm.role}{tm.isCurrentUser ? ' (Self)' : ''}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Completion Notes */}
-          {status === 'COMPLETED' && (
-            <div className="space-y-1 animate-in fade-in">
-              <label className={`text-xs font-medium ${theme.textMuted} block`}>
-                Completion Comment / Outcome
+          {/* Due Date & Due Time (Interactive Callender & Time picker) */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
+                Due Date
               </label>
-              <textarea
-                rows={2}
-                value={completionComment}
-                onChange={(e) => setCompletionComment(e.target.value)}
-                placeholder="Summary of completed outcome or follow-up note..."
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary`}
+              <input
+                type="date"
+                required
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none cursor-pointer`}
               />
             </div>
-          )}
+
+            <div className="space-y-1">
+              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
+                Due Time
+              </label>
+              <input
+                type="time"
+                required
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none cursor-pointer`}
+              />
+            </div>
+          </div>
         </form>
 
         {/* Footer */}
-        <div className={`px-5 py-3 border-t ${theme.border} flex items-center justify-end gap-2 shrink-0`}>
+        <div className={`px-4 py-2.5 border-t ${theme.border} flex items-center justify-end gap-2 shrink-0`}>
           <button
             type="button"
             onClick={onClose}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${theme.border} ${theme.bgPanel} ${theme.textMain} ${theme.hoverBg} cursor-pointer`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${theme.border} ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
           >
             Cancel
           </button>
           <button
             type="submit"
             form="task-modal-form"
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer shadow-xs"
+            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-600 transition-colors cursor-pointer"
           >
-            {isEditing ? 'Save Changes' : 'Create Task'}
+            {isEditing ? 'Save Changes' : 'Assign Task'}
           </button>
         </div>
       </div>

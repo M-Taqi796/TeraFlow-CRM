@@ -7,6 +7,7 @@ import {
   ChartBarIcon,
   Cog6ToothIcon,
   ArrowUpTrayIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 
 export interface NavItemDef {
@@ -24,5 +25,6 @@ export const STATIC_NAV_ITEMS: Omit<NavItemDef, 'count'>[] = [
   { name: 'Tasks', href: '/tasks', icon: CheckCircleIcon },
   { name: 'Meetings', href: '/meetings', icon: CalendarIcon },
   { name: 'Imports', href: '/imports', icon: ArrowUpTrayIcon },
+  { name: 'Teams', href: '/teams', icon: UserGroupIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];

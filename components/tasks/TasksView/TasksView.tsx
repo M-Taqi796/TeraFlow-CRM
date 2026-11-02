@@ -8,40 +8,85 @@ import {
   XMarkIcon,
   PencilSquareIcon,
   TrashIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type { Task } from '@/types/task.types';
+import { CURRENT_USER, TEAM_MEMBERS } from '@/types/task.types';
 import { TaskModal } from '../TaskModal/TaskModal';
 
 export function TasksView() {
-  const { theme, isDarkMode } = useThemeContext();
-  const { tasks, activeTasks, completedTasks, onToggleTaskStatus, onDeleteTask } = useCRM();
+  const { theme } = useThemeContext();
+  const { tasks, onToggleTaskStatus, onDeleteTask } = useCRM();
 
-  // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState('');
+  // Scope Tab: 'ALL' | 'MY_TASKS' | 'ASSIGNED_TO_OTHERS'
+  const [scopeTab, setScopeTab] = useState<'ALL' | 'MY_TASKS' | 'ASSIGNED_TO_OTHERS'>('ALL');
+
+  // Status Filter: 'ALL' | 'TODO' | 'COMPLETED'
   const [statusTab, setStatusTab] = useState<'ALL' | 'TODO' | 'COMPLETED'>('ALL');
 
-  // Modal State
+  // Search Query
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Filtered Tasks
+  // Completion note prompt modal
+  const [completingTask, setCompletingTask] = useState<Task | null>(null);
+  const [completionComment, setCompletionComment] = useState('');
+
+  // Helper to get member role display
+  const getMemberRole = (name: string) => {
+    const found = TEAM_MEMBERS.find((m) => m.name.toLowerCase() === name.toLowerCase());
+    return found ? found.role : '';
+  };
+
+  // Split tasks by scope
+  // My tasks = tasks assigned to me (Muhammad Taqi)
+  const myTasks = useMemo(() => {
+    return tasks.filter((t) => t.assignedTo === CURRENT_USER.name || (!t.assignedTo && t.assignedBy === CURRENT_USER.name));
+  }, [tasks]);
+
+  // Tasks I assigned to others (assignedBy: Muhammad Taqi, assignedTo != Muhammad Taqi)
+  const assignedToOthers = useMemo(() => {
+    return tasks.filter((t) => t.assignedBy === CURRENT_USER.name && t.assignedTo && t.assignedTo !== CURRENT_USER.name);
+  }, [tasks]);
+
+  // Active list based on scopeTab
+  const activeScopeTasks = useMemo(() => {
+    if (scopeTab === 'MY_TASKS') return myTasks;
+    if (scopeTab === 'ASSIGNED_TO_OTHERS') return assignedToOthers;
+    return tasks;
+  }, [scopeTab, myTasks, assignedToOthers, tasks]);
+
+  // Filter by status & search
   const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => {
+    return activeScopeTasks.filter((t) => {
       if (statusTab === 'TODO' && t.status !== 'TODO') return false;
       if (statusTab === 'COMPLETED' && t.status !== 'COMPLETED') return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchTitle = t.title.toLowerCase().includes(q);
-        const matchAssignee = t.assignedBy.toLowerCase().includes(q);
+        const matchAssignedBy = t.assignedBy.toLowerCase().includes(q);
+        const matchAssignedTo = (t.assignedTo || '').toLowerCase().includes(q);
         const matchComment = (t.completionComment || '').toLowerCase().includes(q);
-        return matchTitle || matchAssignee || matchComment;
+        return matchTitle || matchAssignedBy || matchAssignedTo || matchComment;
       }
       return true;
     });
-  }, [tasks, statusTab, searchQuery]);
+  }, [activeScopeTasks, statusTab, searchQuery]);
+
+  // Counts for status pills
+  const statusCounts = useMemo(() => {
+    return {
+      ALL: activeScopeTasks.length,
+      TODO: activeScopeTasks.filter((t) => t.status === 'TODO').length,
+      COMPLETED: activeScopeTasks.filter((t) => t.status === 'COMPLETED').length,
+    };
+  }, [activeScopeTasks]);
 
   const handleOpenNewModal = () => {
     setEditingTask(null);
@@ -49,244 +94,377 @@ export function TasksView() {
   };
 
   const handleOpenEditModal = (task: Task) => {
+    // Only allow editing if self-assigned or created by me
+    if (task.assignedBy !== CURRENT_USER.name) {
+      alert(`Tasks assigned by ${task.assignedBy} cannot be edited.`);
+      return;
+    }
     setEditingTask(task);
     setIsModalOpen(true);
   };
 
   const handleDelete = (task: Task) => {
+    // Only allow deleting if self-assigned or created by me
+    if (task.assignedBy !== CURRENT_USER.name) {
+      alert(`Tasks assigned by ${task.assignedBy} cannot be deleted.`);
+      return;
+    }
     if (confirm(`Delete task "${task.title}"?`)) {
       onDeleteTask(task.id);
     }
   };
 
+  const handleToggleComplete = (task: Task) => {
+    if (task.status === 'TODO') {
+      setCompletingTask(task);
+      setCompletionComment('');
+    } else {
+      onToggleTaskStatus(task.id);
+    }
+  };
+
+  const handleConfirmCompletion = () => {
+    if (!completingTask) return;
+    onToggleTaskStatus(completingTask.id);
+    setCompletingTask(null);
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in">
-      {/* Top Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <CheckCircleIcon className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className={`text-lg font-bold tracking-tight ${theme.textMain}`}>
-                Tasks & Follow-Ups
-              </h1>
-              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary">
-                {activeTasks.length} pending
-              </span>
-              {completedTasks.length > 0 && (
-                <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  {completedTasks.length} completed
-                </span>
-              )}
-            </div>
-            <p className={`text-xs ${theme.textSubtle}`}>
-              Manage action items and follow-ups synced live with your task drawer
-            </p>
-          </div>
+      {/* Top Header & New Task Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-[#333338]">
+        <div>
+          <h1 className={`text-base font-bold tracking-tight ${theme.textMain}`}>
+            Team Tasks & Assignments
+          </h1>
         </div>
 
         <button
-          type="button"
           onClick={handleOpenNewModal}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-primary-600 cursor-pointer shadow-xs transition-colors self-start sm:self-auto"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-600 transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
         >
-          <PlusIcon className="w-4 h-4" />
-          <span>New Task</span>
+          <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+          Assign Task
         </button>
       </div>
 
-      {/* Filter Row */}
-      <div className={`p-3 rounded-xl border ${theme.border} ${theme.bgPanel} flex flex-col md:flex-row md:items-center justify-between gap-2.5 shadow-xs`}>
+      {/* Scope Selector Tabs (All Tasks, My Tasks, Assigned to Others) */}
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#333338] pb-1">
+        <button
+          onClick={() => setScopeTab('ALL')}
+          className={`pb-2 px-1 text-xs font-semibold transition-colors cursor-pointer border-b-2 flex items-center gap-1.5 ${
+            scopeTab === 'ALL'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'
+          }`}
+        >
+          <span>All Tasks</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+            {tasks.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setScopeTab('MY_TASKS')}
+          className={`pb-2 px-1 text-xs font-semibold transition-colors cursor-pointer border-b-2 flex items-center gap-1.5 ${
+            scopeTab === 'MY_TASKS'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'
+          }`}
+        >
+          <span>My Tasks</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+            {myTasks.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setScopeTab('ASSIGNED_TO_OTHERS')}
+          className={`pb-2 px-1 text-xs font-semibold transition-colors cursor-pointer border-b-2 flex items-center gap-1.5 ${
+            scopeTab === 'ASSIGNED_TO_OTHERS'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'
+          }`}
+        >
+          <span>Assigned to Others</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+            {assignedToOthers.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Filters: Search & Status (All, Pending, Completed) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <MagnifyingGlassIcon className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${theme.textSubtle}`} />
+        <div className="relative flex-1 max-w-sm">
+          <MagnifyingGlassIcon className={`w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
           <input
             type="text"
+            placeholder="Search task title, team member, or notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tasks, assigned by, or completion notes..."
-            className={`w-full pl-9 pr-8 py-1.5 rounded-lg text-xs border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} placeholder:${theme.textSubtle} focus:outline-none focus:border-primary`}
+            className={`w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} placeholder-slate-400 focus:outline-none focus:border-slate-400`}
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full ${theme.textSubtle} hover:${theme.textMain} cursor-pointer`}
-            >
-              <XMarkIcon className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
 
-        {/* Status Tabs */}
-        <div className={`flex items-center gap-1 p-0.5 rounded-lg border ${theme.border} ${theme.bgSubtle}`}>
-          <button
-            type="button"
-            onClick={() => setStatusTab('ALL')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-              statusTab === 'ALL'
-                ? 'bg-primary text-white shadow-xs'
-                : `${theme.textMuted} hover:${theme.textMain}`
-            }`}
-          >
-            All ({tasks.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusTab('TODO')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-              statusTab === 'TODO'
-                ? 'bg-primary text-white shadow-xs'
-                : `${theme.textMuted} hover:${theme.textMain}`
-            }`}
-          >
-            Pending ({activeTasks.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusTab('COMPLETED')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-              statusTab === 'COMPLETED'
-                ? 'bg-primary text-white shadow-xs'
-                : `${theme.textMuted} hover:${theme.textMain}`
-            }`}
-          >
-            Completed ({completedTasks.length})
-          </button>
+        {/* Status Filters: All, Pending, Completed */}
+        <div className="flex items-center gap-1">
+          {(['ALL', 'TODO', 'COMPLETED'] as const).map((tab) => {
+            const isActive = statusTab === tab;
+            const label = tab === 'ALL' ? 'All' : tab === 'TODO' ? 'Pending' : 'Completed';
+            return (
+              <button
+                key={tab}
+                onClick={() => setStatusTab(tab)}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                  isActive
+                    ? 'bg-primary text-white'
+                    : `border ${theme.border} ${theme.bgPanel} ${theme.textMuted} hover:${theme.textMain}`
+                }`}
+              >
+                <span>{label}</span>
+                <span className={`text-[10px] ${isActive ? 'text-white/80' : 'text-slate-400'}`}>
+                  ({statusCounts[tab]})
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Tasks Table */}
-      <div className={`rounded-xl border ${theme.border} ${theme.bgPanel} shadow-xs overflow-hidden`}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[750px]">
-            <thead>
-              <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
-                <th className="py-3 px-4 w-12 text-center">Done</th>
-                <th className="py-3 px-4 min-w-[260px]">Task Description</th>
-                <th className="py-3 px-4 min-w-[140px]">Assigned By</th>
-                <th className="py-3 px-4 min-w-[140px]">Due Date</th>
-                <th className="py-3 px-4 min-w-[110px]">Status</th>
-                <th className="py-3 px-4 w-20 text-center">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">
-              {filteredTasks.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className={`py-12 text-center ${theme.textSubtle}`}>
-                    <p className="text-sm font-semibold mb-1">No tasks found.</p>
-                    <p className="text-xs">
-                      {searchQuery
-                        ? 'Try clearing your search query.'
-                        : 'Click "New Task" above to add your first task.'}
-                    </p>
-                  </td>
+      <div className={`rounded-xl border ${theme.border} ${theme.bgPanel} overflow-hidden`}>
+        {filteredTasks.length === 0 ? (
+          <div className="p-8 text-center space-y-2">
+            <CheckCircleIcon className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 stroke-1" />
+            <p className={`text-xs font-medium ${theme.textMuted}`}>
+              {searchQuery
+                ? 'No tasks matching your search.'
+                : scopeTab === 'MY_TASKS'
+                ? 'No tasks found in My Tasks.'
+                : scopeTab === 'ASSIGNED_TO_OTHERS'
+                ? 'No tasks currently assigned to others.'
+                : 'No tasks found.'}
+            </p>
+            <button
+              type="button"
+              onClick={handleOpenNewModal}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-primary text-white hover:bg-primary-600 transition-colors cursor-pointer"
+            >
+              <PlusIcon className="w-3 h-3" />
+              Assign New Task
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className={`${theme.bgSubtle} text-[11px] uppercase font-bold ${theme.textSubtle} tracking-wider border-b ${theme.border}`}>
+                  <th className="py-3 px-3 w-8"></th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">Task</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">Assigned By</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">Assigned To</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">Due Date & Time</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">Status</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap">Actions</th>
                 </tr>
-              ) : (
-                filteredTasks.map((t) => {
-                  const isDone = t.status === 'COMPLETED';
+              </thead>
+              <tbody className={`divide-y ${theme.divide}`}>
+                {filteredTasks.map((t) => {
+                  const isCompleted = t.status === 'COMPLETED';
+                  const isSelfAssigned = t.assignedBy === CURRENT_USER.name && t.assignedTo === CURRENT_USER.name;
+                  const isAssignedByMe = t.assignedBy === CURRENT_USER.name;
+                  const canEditOrDelete = isAssignedByMe; // Self assigned or assigned by me to others
+                  const isAssignedToMe = !t.assignedTo || t.assignedTo === CURRENT_USER.name;
+
+                  // Assigned By text representation:
+                  let assignedByText = t.assignedBy;
+                  if (isSelfAssigned) {
+                    assignedByText = 'Self';
+                  } else {
+                    const role = getMemberRole(t.assignedBy);
+                    if (role) assignedByText = `${t.assignedBy} (${role})`;
+                  }
+
+                  // Assigned To text representation:
+                  const assignedToRole = getMemberRole(t.assignedTo || '');
+                  const assignedToText = t.assignedTo === CURRENT_USER.name
+                    ? 'Self'
+                    : assignedToRole
+                    ? `${t.assignedTo} (${assignedToRole})`
+                    : (t.assignedTo || 'Unassigned');
+
                   return (
-                    <tr
-                      key={t.id}
-                      className={`transition-colors border-b border-slate-200 dark:border-zinc-800 ${theme.rowHover}`}
-                    >
-                      {/* Done Checkbox */}
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          type="button"
-                          onClick={() => onToggleTaskStatus(t.id)}
-                          className="cursor-pointer text-slate-400 hover:text-primary transition-colors"
-                          title={isDone ? 'Mark as Todo' : 'Mark as Completed'}
-                        >
-                          {isDone ? (
-                            <CheckBadgeIcon className="w-5 h-5 text-emerald-500" />
-                          ) : (
-                            <div className="w-4 h-4 rounded-md border border-slate-300 dark:border-zinc-600 hover:border-primary transition-colors" />
-                          )}
-                        </button>
+                    <tr key={t.id} className={`${theme.rowHover} transition-colors`}>
+                      {/* Completion Checkbox - Only the assigned person can mark complete */}
+                      <td className="py-2.5 px-3">
+                        {!isAssignedToMe ? (
+                          <div
+                            className="cursor-not-allowed opacity-60"
+                            title={`Only ${t.assignedTo || 'assignee'} can mark this task complete`}
+                          >
+                            {isCompleted ? (
+                              <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                            ) : (
+                              <div className="w-4 h-4 rounded border border-slate-300 dark:border-zinc-600 bg-slate-100 dark:bg-zinc-800" />
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleComplete(t)}
+                            className="cursor-pointer"
+                            title={isCompleted ? 'Mark as pending' : 'Mark as completed'}
+                          >
+                            {isCompleted ? (
+                              <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                            ) : (
+                              <div className="w-4 h-4 rounded border border-slate-300 dark:border-zinc-600 hover:border-emerald-500 transition-colors" />
+                            )}
+                          </button>
+                        )}
                       </td>
 
-                      {/* Task Title & Completion comment */}
-                      <td className="py-3 px-4">
-                        <p
-                          className={`font-semibold ${
-                            isDone ? `line-through ${theme.textSubtle}` : theme.textMain
-                          }`}
-                        >
+                      {/* Task Title */}
+                      <td className="py-2.5 px-3 max-w-md">
+                        <span className={`font-semibold ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : theme.textMain}`}>
                           {t.title}
-                        </p>
+                        </span>
                         {t.completionComment && (
-                          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">
-                            Outcome: {t.completionComment}
+                          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 italic">
+                            Note: {t.completionComment}
                           </p>
                         )}
                       </td>
 
                       {/* Assigned By */}
-                      <td className={`py-3 px-4 ${theme.textMuted}`}>
-                        {t.assignedBy}
-                      </td>
-
-                      {/* Due Date */}
-                      <td className={`py-3 px-4 whitespace-nowrap ${theme.textMuted}`}>
-                        {t.dueAt}
-                      </td>
-
-                      {/* Status Badge */}
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border ${
-                            isDone
-                              ? isDarkMode
-                                ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800'
-                                : 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                              : isDarkMode
-                              ? 'bg-blue-950/70 text-blue-300 border-blue-800'
-                              : 'bg-blue-50 text-blue-700 border-blue-300'
-                          }`}
-                        >
-                          {isDone ? 'Completed' : 'Pending'}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap text-[11px]">
+                        <span className={isSelfAssigned ? 'font-medium text-slate-600 dark:text-zinc-300' : 'font-semibold text-primary'}>
+                          {assignedByText}
                         </span>
                       </td>
 
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditModal(t)}
-                            className="p-1 rounded text-slate-400 hover:text-primary transition-colors cursor-pointer"
-                            title="Edit task"
-                          >
-                            <PencilSquareIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(t)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
-                            title="Delete task"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
+                      {/* Assigned To */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap text-[11px]">
+                        <span className={isAssignedToMe ? 'font-medium text-slate-600 dark:text-zinc-300' : 'font-semibold text-slate-700 dark:text-zinc-200'}>
+                          {assignedToText}
+                        </span>
+                      </td>
+
+                      {/* Due Date & Time - Prominent bold black text */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        {t.dueAt}
+                      </td>
+
+                      {/* Status (Color on text only) */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap text-[11px]">
+                        {isCompleted ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Completed
+                          </span>
+                        ) : (
+                          <span className="text-blue-500 dark:text-blue-400 font-semibold">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions: Edit & Delete allowed ONLY for self-assigned or created by me */}
+                      <td className="py-2.5 px-3.5 text-right whitespace-nowrap">
+                        {canEditOrDelete ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditModal(t)}
+                              className={`p-1 rounded ${theme.textMuted} hover:${theme.textMain} transition-colors cursor-pointer`}
+                              title="Edit Task"
+                            >
+                              <PencilSquareIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(t)}
+                              className={`p-1 rounded ${theme.textMuted} hover:text-rose-500 transition-colors cursor-pointer`}
+                              title="Delete Task"
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end gap-1 text-slate-400 text-[10px]" title={`Assigned by ${t.assignedBy} - cannot be edited or deleted`}>
+                            <LockClosedIcon className="w-3 h-3 text-slate-400" />
+                            <span>Locked</span>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* New / Edit Task Modal */}
+      {/* Task Modal (Assign / Edit) */}
       <TaskModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTask(null);
+        }}
         initialTask={editingTask}
       />
+
+      {/* Mark Completed Prompt Modal */}
+      {completingTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/60 backdrop-blur-xs">
+          <div className={`w-full max-w-sm rounded-xl border ${theme.border} ${theme.bgPanel} p-4 space-y-3 shadow-xl`}>
+            <div className="flex items-center justify-between">
+              <h3 className={`text-xs font-bold ${theme.textMain}`}>
+                Complete Task
+              </h3>
+              <button
+                onClick={() => setCompletingTask(null)}
+                className={`p-1 rounded ${theme.textMuted} hover:${theme.textMain}`}
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <p className={`text-[11px] ${theme.textMuted}`}>
+              &quot;{completingTask.title}&quot;
+            </p>
+            <div className="space-y-1">
+              <label className={`text-[11px] font-medium ${theme.textMuted} block`}>
+                Completion Note (Optional)
+              </label>
+              <textarea
+                rows={2}
+                value={completionComment}
+                onChange={(e) => setCompletionComment(e.target.value)}
+                placeholder="What was done or follow-up note..."
+                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none`}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setCompletingTask(null)}
+                className={`px-2.5 py-1 rounded text-xs border ${theme.border} ${theme.textMuted}`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCompletion}
+                className="px-3 py-1 rounded text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+              >
+                Mark Completed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
