@@ -2,20 +2,12 @@
 
 @import "tailwindcss";
 
-*, ::before, ::after {
-  border-color: var(--default-border-color, #E2E8F0);
-}
-
-.dark *, .dark ::before, .dark ::after {
-  border-color: var(--default-border-color, #27272A);
-}
-
 hr, table, thead, tbody, tr, th, td {
-  border-color: var(--default-border-color, #E2E8F0);
+  border-color: #E2E8F0;
 }
 
 .dark hr, .dark table, .dark thead, .dark tbody, .dark tr, .dark th, .dark td {
-  border-color: var(--default-border-color, #27272A);
+  border-color: #333338;
 }
 
 @theme inline {

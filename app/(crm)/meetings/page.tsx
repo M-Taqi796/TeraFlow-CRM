@@ -1,10 +1,5 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { MeetingsView } from '@/components/meetings/MeetingsView/MeetingsView';
 
 export default function MeetingsPage() {
-  return (
-    <PlaceholderView
-      title="Scheduled Meetings"
-      description="View upcoming booked demonstrations, deal negotiations, and past client interactions across your calendar."
-    />
-  );
+  return <MeetingsView />;
 }

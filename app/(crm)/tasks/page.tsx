@@ -1,10 +1,5 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { TasksView } from '@/components/tasks/TasksView/TasksView';
 
 export default function TasksPage() {
-  return (
-    <PlaceholderView
-      title="Tasks & Follow-Ups"
-      description="Manage all high-priority action items, follow-up deadlines, and team assignments in one centralized board."
-    />
-  );
+  return <TasksView />;
 }

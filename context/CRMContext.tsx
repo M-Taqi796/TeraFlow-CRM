@@ -35,7 +35,14 @@ interface CRMContextType {
   onBulkStage: (ids: string[], stage: PersonStage) => void;
   onBulkDelete: (ids: string[]) => void;
   onMeetingStatusChange: (id: string, status: MeetingStatus) => void;
+  onAddMeeting: (meeting: Omit<Meeting, 'id'>) => void;
+  onEditMeeting: (id: string, meeting: Partial<Meeting>) => void;
+  onDeleteMeeting: (id: string) => void;
   onCompleteTask: (taskId: string, comment: string) => void;
+  onAddTask: (task: { title: string; assignedBy?: string; dueAt?: string; status?: 'TODO' | 'COMPLETED' }) => void;
+  onEditTask: (id: string, task: Partial<Task>) => void;
+  onDeleteTask: (id: string) => void;
+  onToggleTaskStatus: (id: string) => void;
   onAddCallLog: (data: {
     personId?: string;
     businessName: string;
@@ -239,6 +246,24 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setMeetings((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
   };
 
+  const handleAddMeeting = (meeting: Omit<Meeting, 'id'>) => {
+    const newMeeting: Meeting = {
+      ...meeting,
+      id: `m-${Date.now()}`,
+    };
+    setMeetings((prev) => [newMeeting, ...prev]);
+  };
+
+  const handleEditMeeting = (id: string, updated: Partial<Meeting>) => {
+    setMeetings((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, ...updated } : m))
+    );
+  };
+
+  const handleDeleteMeeting = (id: string) => {
+    setMeetings((prev) => prev.filter((m) => m.id !== id));
+  };
+
   const handleCompleteTask = (taskId: string, comment: string) => {
     setTasks((prev) =>
       prev.map((t) =>
@@ -246,6 +271,46 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
           ? { ...t, status: 'COMPLETED', completionComment: comment, completedAt: 'Just now' }
           : t
       )
+    );
+  };
+
+  const handleAddTask = (taskData: {
+    title: string;
+    assignedBy?: string;
+    dueAt?: string;
+    status?: 'TODO' | 'COMPLETED';
+  }) => {
+    const newTask: Task = {
+      id: `t-${Date.now()}`,
+      title: taskData.title.trim(),
+      assignedBy: taskData.assignedBy?.trim() || 'Muhammad Taqi',
+      dueAt: taskData.dueAt?.trim() || 'Today',
+      status: taskData.status || 'TODO',
+    };
+    setTasks((prev) => [newTask, ...prev]);
+  };
+
+  const handleEditTask = (id: string, updated: Partial<Task>) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...updated } : t))
+    );
+  };
+
+  const handleDeleteTask = (id: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleToggleTaskStatus = (id: string) => {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        const newStatus = t.status === 'TODO' ? 'COMPLETED' : 'TODO';
+        return {
+          ...t,
+          status: newStatus,
+          completedAt: newStatus === 'COMPLETED' ? 'Just now' : undefined,
+        };
+      })
     );
   };
 
@@ -574,7 +639,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         onBulkStage: handleBulkStage,
         onBulkDelete: handleBulkDelete,
         onMeetingStatusChange: handleMeetingStatusChange,
+        onAddMeeting: handleAddMeeting,
+        onEditMeeting: handleEditMeeting,
+        onDeleteMeeting: handleDeleteMeeting,
         onCompleteTask: handleCompleteTask,
+        onAddTask: handleAddTask,
+        onEditTask: handleEditTask,
+        onDeleteTask: handleDeleteTask,
+        onToggleTaskStatus: handleToggleTaskStatus,
         onAddCallLog: handleAddCallLog,
         onEditCallLog: handleEditCallLog,
         onDeleteCallLog: handleDeleteCallLog,

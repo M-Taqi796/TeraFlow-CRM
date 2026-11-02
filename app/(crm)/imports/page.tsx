@@ -1,10 +1,5 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { ImportsView } from '@/components/imports/ImportsView/ImportsView';
 
 export default function ImportsPage() {
-  return (
-    <PlaceholderView
-      title="Contact & Lead Imports"
-      description="Upload CSV spreadsheets from external databases, Zillow, or Meta Ads and map fields to your People directory."
-    />
-  );
+  return <ImportsView />;
 }
