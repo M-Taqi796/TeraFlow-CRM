@@ -304,7 +304,7 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
               >
                 {EMAIL_TYPE_OPTIONS.map((t) => (
                   <option key={t} value={t}>
-                    {t === 'Sent' ? 'Outbound (Sent)' : 'Inbound (Reply)'}
+                    {t === 'Sent' ? 'Sent' : 'Received'}
                   </option>
                 ))}
               </select>

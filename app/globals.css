@@ -234,3 +234,32 @@ html, body {
 .login-stat-num { font-size: 1.5rem; font-weight: 800; color: #38bdf8; line-height: 1; letter-spacing: -0.02em; }
 .login-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: 500; }
 .login-stat-divider { width: 1px; height: 2.5rem; background: rgba(255,255,255,0.2); align-self: center; }
+
+/* Tags horizontal scroll container with hover scrollbar reveal */
+.tags-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+.tags-scroll-container:hover {
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}
+.tags-scroll-container::-webkit-scrollbar {
+  height: 4px;
+}
+.tags-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tags-scroll-container::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+.tags-scroll-container:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+}
+.dark .tags-scroll-container:hover::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.55);
+}

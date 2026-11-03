@@ -185,7 +185,7 @@ export function OutreachView() {
             <option value="All">Type: All</option>
             {EMAIL_TYPE_OPTIONS.map((t) => (
               <option key={t} value={t}>
-                {t === 'Sent' ? 'Outbound (Sent)' : 'Inbound (Reply)'}
+                {t === 'Sent' ? 'Sent' : 'Received'}
               </option>
             ))}
           </select>
@@ -281,7 +281,7 @@ export function OutreachView() {
                           log.emailType
                         )}`}
                       >
-                        {log.emailType}
+                        {log.emailType === 'Sent' ? 'Sent' : 'Received'}
                       </span>
                     </td>
 

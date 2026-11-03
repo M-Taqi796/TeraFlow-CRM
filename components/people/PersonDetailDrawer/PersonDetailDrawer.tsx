@@ -130,6 +130,27 @@ export function PersonDetailDrawer({
     return allTags.filter((t) => !person.tags.includes(t));
   }, [allTags, person?.tags]);
 
+  const getStageTextColor = (stage: PersonStage) => {
+    switch (stage) {
+      case 'New Leads':
+        return 'text-slate-500 dark:text-zinc-400 font-semibold';
+      case 'Contacted':
+        return 'text-blue-500 dark:text-blue-400 font-semibold';
+      case 'Booked':
+        return 'text-violet-600 dark:text-violet-400 font-semibold';
+      case 'Follow-Up':
+        return 'text-amber-500 dark:text-amber-400 font-semibold';
+      case 'Closed':
+        return 'text-emerald-500 dark:text-emerald-400 font-semibold';
+      case 'Denied':
+        return 'text-rose-500 dark:text-rose-400 font-semibold';
+      case 'Past Clients':
+        return 'text-teal-500 dark:text-teal-400 font-semibold';
+      default:
+        return 'text-slate-500 dark:text-zinc-400 font-semibold';
+    }
+  };
+
   // Timeline Filter (multi-select checkboxes)
   const [timelineFilterOpen, setTimelineFilterOpen] = useState(false);
   const [selectedTimelineTypes, setSelectedTimelineTypes] = useState<ActivityType[]>([
@@ -723,14 +744,25 @@ export function PersonDetailDrawer({
               <span className="sm:hidden">Meeting</span>
             </button>
 
-            {/* Stage Selector */}
+            {/* Stage Selector (No background, no border, text colored only - same as in meeting) */}
             <select
               value={person.stage}
               onChange={(e) => handleStageChange(e.target.value as PersonStage)}
-              className={`text-xs font-semibold py-1.5 px-3 rounded-lg border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${theme.bgPanel} ${theme.border} ${theme.textMain}`}
+              aria-label={`Stage for ${person.businessName}`}
+              className={`text-xs py-1 px-1.5 bg-transparent border-none cursor-pointer focus:outline-none ${getStageTextColor(
+                person.stage
+              )}`}
             >
               {PERSON_STAGES.map((stg) => (
-                <option key={stg} value={stg} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-zinc-100">
+                <option
+                  key={stg}
+                  value={stg}
+                  className={
+                    isDarkMode
+                      ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
+                      : 'bg-white text-[#2C2C2C] font-normal'
+                  }
+                >
                   {stg}
                 </option>
               ))}
@@ -1349,22 +1381,12 @@ export function PersonDetailDrawer({
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       actionMode === 'email'
-                        ? 'bg-amber-600 text-white shadow-xs'
-                        : 'border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'border border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
                     }`}
                   >
                     <EnvelopeIcon className="w-3.5 h-3.5" />
                     <span>Log Email</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsScheduleMeetingOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/5 dark:hover:bg-primary/20 transition-colors cursor-pointer"
-                    title="Schedule a meeting with this contact"
-                  >
-                    <CalendarDaysIcon className="w-3.5 h-3.5" />
-                    <span>Schedule Meeting</span>
                   </button>
                 </div>
               </div>
@@ -1437,7 +1459,7 @@ export function PersonDetailDrawer({
 
               {/* Email Logging Form */}
               {actionMode === 'email' && (
-                <form onSubmit={handleLogEmail} className={`p-3.5 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20 space-y-3 animate-in fade-in`}>
+                <form onSubmit={handleLogEmail} className={`p-3.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/20 space-y-3 animate-in fade-in`}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                       <label className={`block text-[11px] font-bold uppercase ${theme.textMain} mb-1`}>
@@ -1449,22 +1471,22 @@ export function PersonDetailDrawer({
                           onClick={() => setEmailType('Sent')}
                           className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
                             emailType === 'Sent'
-                              ? 'bg-amber-600 text-white border-amber-600'
+                              ? 'bg-blue-600 text-white border-blue-600'
                               : `${theme.bgPanel} ${theme.border} ${theme.textMuted}`
                           }`}
                         >
-                          Sent (Outbound)
+                          Sent
                         </button>
                         <button
                           type="button"
                           onClick={() => setEmailType('Reply')}
                           className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
                             emailType === 'Reply'
-                              ? 'bg-amber-600 text-white border-amber-600'
+                              ? 'bg-blue-600 text-white border-blue-600'
                               : `${theme.bgPanel} ${theme.border} ${theme.textMuted}`
                           }`}
                         >
-                          Reply (Inbound)
+                          Received
                         </button>
                       </div>
                     </div>
@@ -1519,7 +1541,7 @@ export function PersonDetailDrawer({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 shadow-xs cursor-pointer"
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 shadow-xs cursor-pointer"
                     >
                       Save Email
                     </button>

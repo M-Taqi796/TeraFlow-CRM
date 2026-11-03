@@ -31,40 +31,24 @@ export function PeopleTable({
   const isAllSelected = people.length > 0 && selectedIds.length === people.length;
   const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < people.length;
 
-  const getStageBadgeStyle = (stage: PersonStage) => {
+  const getStageTextColor = (stage: PersonStage) => {
     switch (stage) {
       case 'New Leads':
-        return isDarkMode
-          ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
-          : 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'text-slate-500 dark:text-zinc-400 font-semibold';
       case 'Contacted':
-        return isDarkMode
-          ? 'bg-blue-950/70 text-blue-300 border-blue-800'
-          : 'bg-blue-50 text-primary border-primary/40';
+        return 'text-blue-500 dark:text-blue-400 font-semibold';
       case 'Booked':
-        return isDarkMode
-          ? 'bg-violet-950/70 text-violet-300 border-violet-800'
-          : 'bg-violet-50 text-violet-700 border-violet-300';
+        return 'text-violet-600 dark:text-violet-400 font-semibold';
       case 'Follow-Up':
-        return isDarkMode
-          ? 'bg-amber-950/70 text-amber-300 border-amber-800'
-          : 'bg-amber-50 text-amber-700 border-amber-300';
+        return 'text-amber-500 dark:text-amber-400 font-semibold';
       case 'Closed':
-        return isDarkMode
-          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800'
-          : 'bg-emerald-50 text-emerald-700 border-emerald-300';
+        return 'text-emerald-500 dark:text-emerald-400 font-semibold';
       case 'Denied':
-        return isDarkMode
-          ? 'bg-rose-950/70 text-rose-300 border-rose-800'
-          : 'bg-rose-50 text-rose-700 border-rose-300';
+        return 'text-rose-500 dark:text-rose-400 font-semibold';
       case 'Past Clients':
-        return isDarkMode
-          ? 'bg-teal-950/70 text-teal-300 border-teal-800'
-          : 'bg-teal-50 text-teal-700 border-teal-300';
+        return 'text-teal-500 dark:text-teal-400 font-semibold';
       default:
-        return isDarkMode
-          ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
-          : 'bg-gray-100 text-gray-700 border-gray-300';
+        return 'text-slate-500 dark:text-zinc-400 font-semibold';
     }
   };
 
@@ -91,7 +75,7 @@ export function PeopleTable({
               <th className="py-3 px-4 min-w-[200px]">Person / Contact</th>
               <th className="py-3 px-4 min-w-[140px]">Phone</th>
               <th className="py-3 px-4 min-w-[180px]">Email</th>
-              <th className="py-3 px-4 min-w-[160px]">Tags</th>
+              <th className="py-3 px-4 min-w-[180px] max-w-[280px]">Tags</th>
               <th className="py-3 px-4 min-w-[200px]">Comment</th>
               <th className="py-3 px-4 min-w-[150px]">Niche</th>
               <th className="py-3 px-4 min-w-[120px]">Stage</th>
@@ -205,15 +189,22 @@ export function PeopleTable({
                       )}
                     </td>
 
-                    {/* Tags: Arranged horizontally, uniform clean subtle styling */}
-                    <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Tags: Horizontally scrollable on hover, no # symbol */}
+                    <td className="py-3 px-4 max-w-[280px]" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex items-center gap-1.5 overflow-x-auto max-w-[260px] py-1 tags-scroll-container"
+                        onWheel={(e) => {
+                          if (e.deltaY !== 0 && e.currentTarget.scrollWidth > e.currentTarget.clientWidth) {
+                            e.currentTarget.scrollLeft += e.deltaY;
+                          }
+                        }}
+                      >
                         {person.tags.map((tag) => (
                           <span
                             key={tag}
-                            className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgSubtle} ${theme.textMain}`}
+                            className={`shrink-0 inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md font-medium border ${theme.border} ${theme.bgSubtle} ${theme.textMain} whitespace-nowrap`}
                           >
-                            <span>#{tag}</span>
+                            <span>{tag.replace(/^#/, '')}</span>
                             <button
                               type="button"
                               onClick={() => onRemoveTag(person.id, tag)}
@@ -224,10 +215,12 @@ export function PeopleTable({
                             </button>
                           </span>
                         ))}
-                        <InlineTagEditor
-                          existingTags={person.tags}
-                          onAddTag={(tag) => onAddTag(person.id, tag)}
-                        />
+                        <div className="shrink-0">
+                          <InlineTagEditor
+                            existingTags={person.tags}
+                            onAddTag={(tag) => onAddTag(person.id, tag)}
+                          />
+                        </div>
                       </div>
                     </td>
 
@@ -252,17 +245,26 @@ export function PeopleTable({
                       </div>
                     </td>
 
-                    {/* Stage Dropdown */}
-                    <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                    {/* Stage Dropdown (No background, no border, text colored only - same as in meeting) */}
+                    <td className="py-3 px-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={person.stage}
                         onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
-                        className={`text-xs font-semibold py-1 px-2.5 rounded-lg border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${getStageBadgeStyle(
+                        aria-label={`Stage for ${person.businessName}`}
+                        className={`text-xs py-0.5 px-1 bg-transparent border-none focus:outline-none cursor-pointer ${getStageTextColor(
                           person.stage
                         )}`}
                       >
                         {PERSON_STAGES.map((stg) => (
-                          <option key={stg} value={stg} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-zinc-100">
+                          <option
+                            key={stg}
+                            value={stg}
+                            className={
+                              isDarkMode
+                                ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
+                                : 'bg-white text-[#2C2C2C] font-normal'
+                            }
+                          >
                             {stg}
                           </option>
                         ))}

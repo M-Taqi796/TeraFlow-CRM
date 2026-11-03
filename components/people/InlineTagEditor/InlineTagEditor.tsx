@@ -31,13 +31,13 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
   }, [isOpen]);
 
   const handleSelectTag = (tag: string) => {
-    onAddTag(tag);
+    onAddTag(tag.replace(/^#/, ''));
     setIsOpen(false);
   };
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = customTag.trim();
+    const clean = customTag.trim().replace(/^#/, '');
     if (clean) {
       onAddTag(clean);
       setCustomTag('');
@@ -103,7 +103,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
                   onClick={() => handleSelectTag(tag)}
                   className={`w-full text-left text-xs px-2 py-1 rounded-md ${theme.hoverBg} ${theme.textMain} flex items-center justify-between transition-colors cursor-pointer`}
                 >
-                  <span>#{tag}</span>
+                  <span>{tag.replace(/^#/, '')}</span>
                   <PlusIcon className="w-3 h-3 text-primary opacity-60" />
                 </button>
               ))
