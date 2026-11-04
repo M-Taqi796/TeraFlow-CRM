@@ -21,11 +21,7 @@ export function SmartListsBar({
     <div className="relative">
       {/* Scroll-fade affordance on right edge */}
       <div
-        className={`absolute right-0 top-0 bottom-0 w-8 pointer-events-none z-10 ${
-          isDarkMode
-            ? 'bg-gradient-to-l from-[#121214] to-transparent'
-            : 'bg-gradient-to-l from-[#F8FAFC] to-transparent'
-        }`}
+        className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none z-10 bg-gradient-to-l from-[#F8FAFC] dark:from-[#121214] to-transparent"
       />
 
       <div className={`flex items-center gap-0.5 overflow-x-auto scrollbar-none border-b ${theme.border} pr-8`}>

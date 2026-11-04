@@ -9,20 +9,18 @@ import {
   ArrowRightIcon,
   SunIcon,
   MoonIcon,
-  ComputerDesktopIcon,
 } from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
 import type { ThemeMode } from '@/hooks/useTheme';
 
 export function SettingsView() {
-  const { theme, isDarkMode, themeMode, setThemeMode } = useThemeContext();
+  const { theme, themeMode, setThemeMode } = useThemeContext();
   const { currentUser, teamMembers } = useCRM();
 
   const themeOptions: { id: ThemeMode; label: string; icon: React.ElementType; desc: string }[] = [
-    { id: 'light', label: 'Light', icon: SunIcon, desc: 'Clean light appearance' },
-    { id: 'dark', label: 'Dark', icon: MoonIcon, desc: 'Sleek dark theme' },
-    { id: 'system', label: 'System', icon: ComputerDesktopIcon, desc: 'Syncs automatically with device OS' },
+    { id: 'light', label: 'Light', icon: SunIcon, desc: 'Clean, radiant light appearance' },
+    { id: 'dark', label: 'Dark', icon: MoonIcon, desc: 'Sleek, eye-friendly dark theme' },
   ];
 
   return (
@@ -101,19 +99,19 @@ export function SettingsView() {
               <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 <SwatchIcon className="w-6 h-6" />
               </div>
-              <span className={`text-xs font-semibold ${theme.textMuted} capitalize`}>
-                Active: {themeMode} ({isDarkMode ? 'Dark' : 'Light'})
+              <span suppressHydrationWarning className={`text-xs font-semibold ${theme.textMuted} capitalize`}>
+                Active: {themeMode}
               </span>
             </div>
             <h2 className={`text-sm font-semibold ${theme.textMain}`}>
               Theme & Appearance
             </h2>
             <p className={`text-xs ${theme.textMuted} mt-1 leading-relaxed`}>
-              Choose your default theme. When set to System mode, TeraFlow automatically matches your computer's light or dark mode setting in real-time.
+              Choose your preferred visual theme across your TeraFlow CRM workspace.
             </p>
 
-            {/* 3 Interactive Mode Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            {/* 2 Interactive Mode Cards: Light and Dark */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
               {themeOptions.map((opt) => {
                 const Icon = opt.icon;
                 const isSelected = themeMode === opt.id;
@@ -122,7 +120,7 @@ export function SettingsView() {
                     key={opt.id}
                     type="button"
                     onClick={() => setThemeMode(opt.id)}
-                    className={`p-3.5 rounded-xl border flex flex-col items-center text-center gap-2 transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border flex flex-col items-center text-center gap-2.5 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-primary bg-primary/10 ring-1 ring-primary shadow-xs'
                         : `${theme.border} hover:bg-slate-50 dark:hover:bg-slate-800/60`
@@ -141,13 +139,6 @@ export function SettingsView() {
                 );
               })}
             </div>
-          </div>
-
-          <div className="mt-5 pt-3.5 border-t border-border/40 flex items-center justify-between text-xs">
-            <span className={theme.textMuted}>Operating System Sync:</span>
-            <span className="font-semibold text-primary">
-              {themeMode === 'system' ? 'Automatic (Syncing with device)' : 'Manual Selection'}
-            </span>
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ export const metadata = {
   description: 'Manage team roster, roles, credentials, and access control.',
 };
 
+export const instant = false;
+
 export default function TeamsPage() {
   return <TeamsView />;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark';
 
 export interface ThemePalette {
   bgApp: string;
@@ -55,91 +55,44 @@ export function useTheme(): UseThemeReturn {
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('tf_theme_mode') as ThemeMode | null;
-        if (stored === 'light' || stored === 'dark' || stored === 'system') {
-          return stored;
-        }
+        const stored = localStorage.getItem('tf_theme_mode');
+        if (stored === 'dark') return 'dark';
+        if (stored === 'light') return 'light';
       } catch {}
     }
-    return 'system';
+    return 'light';
   });
-
-  // Query OS preference safely
-  const getSystemPrefersDark = useCallback((): boolean => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }, []);
 
   // Sync state on client mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    let mode: ThemeMode = 'system';
+    let mode: ThemeMode = 'light';
     try {
-      const stored = localStorage.getItem('tf_theme_mode') as ThemeMode | null;
-      if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      const stored = localStorage.getItem('tf_theme_mode');
+      if (stored === 'dark' || stored === 'light') {
         mode = stored;
       }
     } catch {}
 
     setThemeModeState(mode);
-
-    let dark = false;
-    if (mode === 'dark') {
-      dark = true;
-    } else if (mode === 'light') {
-      dark = false;
-    } else {
-      dark = getSystemPrefersDark();
-    }
-
+    const dark = mode === 'dark';
     setIsDarkMode(dark);
     if (dark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [getSystemPrefersDark]);
-
-  // Listen to OS system color-scheme changes when in 'system' mode
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = (e: MediaQueryListEvent) => {
-      if (themeMode === 'system') {
-        const dark = e.matches;
-        setIsDarkMode(dark);
-        if (dark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleSystemChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
-  }, [themeMode]);
+  }, []);
 
   const setThemeMode = useCallback((mode: ThemeMode) => {
     setThemeModeState(mode);
+    const dark = mode === 'dark';
     try {
       localStorage.setItem('tf_theme_mode', mode);
       document.cookie = `tf_theme_mode=${mode}; path=/; max-age=31536000; SameSite=Lax`;
-      // Clean up legacy key if exists
       localStorage.removeItem('tf_theme');
     } catch {}
-
-    let dark = false;
-    if (mode === 'dark') {
-      dark = true;
-    } else if (mode === 'light') {
-      dark = false;
-    } else {
-      // System mode
-      dark = getSystemPrefersDark();
-    }
 
     setIsDarkMode(dark);
     if (dark) {
@@ -147,14 +100,10 @@ export function useTheme(): UseThemeReturn {
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [getSystemPrefersDark]);
+  }, []);
 
   const toggleDarkMode = useCallback(() => {
-    if (isDarkMode) {
-      setThemeMode('light');
-    } else {
-      setThemeMode('dark');
-    }
+    setThemeMode(isDarkMode ? 'light' : 'dark');
   }, [isDarkMode, setThemeMode]);
 
   return { isDarkMode, themeMode, setThemeMode, toggleDarkMode, theme: STATIC_THEME_PALETTE };

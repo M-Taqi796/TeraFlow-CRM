@@ -5,6 +5,8 @@ export const metadata = {
   description: 'Manage CRM settings, account security, team permissions, and workspace preferences.',
 };
 
+export const instant = false;
+
 export default function SettingsPage() {
   return <SettingsView />;
 }

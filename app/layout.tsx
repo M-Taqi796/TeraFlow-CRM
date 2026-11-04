@@ -19,15 +19,7 @@ const themeInitScript = `
 (function() {
   try {
     var mode = localStorage.getItem('tf_theme_mode');
-    var isDark = false;
     if (mode === 'dark') {
-      isDark = true;
-    } else if (mode === 'light') {
-      isDark = false;
-    } else {
-      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');

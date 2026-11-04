@@ -5,6 +5,8 @@ export const metadata = {
   description: 'Manage personal profile, role permissions, and security credentials.',
 };
 
+export const instant = false;
+
 export default function ProfilePage() {
   return <ProfileView />;
 }

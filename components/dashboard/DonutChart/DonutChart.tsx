@@ -55,7 +55,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
             {/* Track */}
             <circle
               cx="50" cy="50" r={radius} fill="transparent"
-              stroke={isDarkMode ? '#282832' : '#E5E7EB'}
+              className="stroke-[#E5E7EB] dark:stroke-[#282832]"
               strokeWidth="13"
             />
             {/* Calls arc */}
