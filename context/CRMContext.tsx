@@ -11,11 +11,13 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
 
 import { COMMON_TAGS, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
+import type { UserProfile, UserRole } from '@/types/user.types';
+import { INITIAL_CURRENT_USER, SEED_TEAM_MEMBERS } from '@/types/user.types';
 
 /** Current authenticated user — update when auth is wired up. */
 export const CURRENT_USER = {
   name: 'Muhammad Taqi',
-  role: 'ADMIN',
+  role: 'Team Lead',
   imageUrl: undefined as string | undefined,
 };
 
@@ -108,6 +110,15 @@ interface CRMContextType {
   ) => void;
   onDeleteEmailLog: (activityId: string) => void;
   onLogout: () => void;
+  /** User Profile & Team Management */
+  currentUser: UserProfile;
+  onUpdateCurrentUser: (updated: Partial<UserProfile>) => void;
+  onChangePassword: (currentPass: string, newPass: string) => { success: boolean; message: string };
+  onSwitchRole: (role: UserRole) => void;
+  teamMembers: UserProfile[];
+  onAddTeamMember: (member: Omit<UserProfile, 'id' | 'joinedDate'>) => void;
+  onUpdateTeamMember: (id: string, updated: Partial<UserProfile>) => void;
+  onDeleteTeamMember: (id: string) => void;
   /** Toast helpers — call from anywhere inside CRMProvider */
   toast: {
     success: (msg: string) => void;
@@ -217,6 +228,105 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
   }, []);
+
+  // ── User Profile & Team Management ──
+  const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_CURRENT_USER);
+  const [teamMembers, setTeamMembers] = useState<UserProfile[]>(SEED_TEAM_MEMBERS);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedUser = localStorage.getItem('teraflow_current_user');
+      if (savedUser) setCurrentUser(JSON.parse(savedUser));
+      const savedTeam = localStorage.getItem('teraflow_team_members');
+      if (savedTeam) setTeamMembers(JSON.parse(savedTeam));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleUpdateCurrentUser = useCallback((updated: Partial<UserProfile>) => {
+    setCurrentUser((prev) => {
+      const next = { ...prev, ...updated };
+      try {
+        localStorage.setItem('teraflow_current_user', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setTeamMembers((prev) => {
+      const next = prev.map((m) => (m.id === INITIAL_CURRENT_USER.id ? { ...m, ...updated } : m));
+      try {
+        localStorage.setItem('teraflow_team_members', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const handleChangePassword = useCallback((currentPass: string, newPass: string) => {
+    if (!newPass || newPass.length < 6) {
+      toastError('Password must be at least 6 characters long');
+      return { success: false, message: 'Password must be at least 6 characters long' };
+    }
+    toastSuccess('Password successfully updated');
+    return { success: true, message: 'Password successfully updated' };
+  }, [toastError, toastSuccess]);
+
+  const handleSwitchRole = useCallback((role: UserRole) => {
+    handleUpdateCurrentUser({ role });
+    toastInfo(`Switched role view to ${role}`);
+  }, [handleUpdateCurrentUser, toastInfo]);
+
+  const handleAddTeamMember = useCallback((data: Omit<UserProfile, 'id' | 'joinedDate'>) => {
+    if (currentUser.role !== 'Team Lead') {
+      toastError('Unauthorized: Only Team Leads can add team members');
+      return;
+    }
+    const newMember: UserProfile = {
+      ...data,
+      role: 'Team Member',
+      id: `u-${Date.now()}`,
+      joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    };
+    setTeamMembers((prev) => {
+      const next = [...prev, newMember];
+      try {
+        localStorage.setItem('teraflow_team_members', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    markNavAsUnread('Teams');
+    toastSuccess(`Added ${newMember.name} to the team`);
+  }, [currentUser.role, markNavAsUnread, toastError, toastSuccess]);
+
+  const handleUpdateTeamMember = useCallback((id: string, updated: Partial<UserProfile>) => {
+    if (currentUser.role !== 'Team Lead') {
+      toastError('Unauthorized: Only Team Leads can update team members');
+      return;
+    }
+    setTeamMembers((prev) => {
+      const next = prev.map((m) => (m.id === id ? { ...m, ...updated } : m));
+      try {
+        localStorage.setItem('teraflow_team_members', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    toastSuccess('Team member updated');
+  }, [currentUser.role, toastError, toastSuccess]);
+
+  const handleDeleteTeamMember = useCallback((id: string) => {
+    if (currentUser.role !== 'Team Lead') {
+      toastError('Unauthorized: Only Team Leads can remove team members');
+      return;
+    }
+    setTeamMembers((prev) => {
+      const next = prev.filter((m) => m.id !== id);
+      try {
+        localStorage.setItem('teraflow_team_members', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    toastInfo('Team member removed');
+  }, [currentUser.role, toastError, toastInfo]);
 
   const handlePersonStageChange = (id: string, stage: PersonStage) => {
     setPeople((prev) =>
@@ -740,6 +850,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         onEditEmailLog: handleEditEmailLog,
         onDeleteEmailLog: handleDeleteEmailLog,
         onLogout: handleLogout,
+        currentUser,
+        onUpdateCurrentUser: handleUpdateCurrentUser,
+        onChangePassword: handleChangePassword,
+        onSwitchRole: handleSwitchRole,
+        teamMembers,
+        onAddTeamMember: handleAddTeamMember,
+        onUpdateTeamMember: handleUpdateTeamMember,
+        onDeleteTeamMember: handleDeleteTeamMember,
         toast: {
           success: toastSuccess,
           error:   toastError,

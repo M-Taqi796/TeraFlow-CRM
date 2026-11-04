@@ -62,6 +62,7 @@ interface SidebarProps {
   /** Dynamic badge counts keyed by nav item name (deprecated) */
   navCounts?: Record<string, number>;
   onLogout: () => void;
+  disableTransition?: boolean;
 }
 
 export function Sidebar({
@@ -74,6 +75,7 @@ export function Sidebar({
   unreadNav: propUnreadNav,
   navCounts = {},
   onLogout,
+  disableTransition = false,
 }: SidebarProps) {
   const { theme, isDarkMode } = useThemeContext();
   const crm = useCRM();
@@ -102,18 +104,23 @@ export function Sidebar({
     onMobileClose();
   };
 
-  // User info from central constant — swap with auth context when ready
-  const { name: userName, role: userRole, imageUrl } = CURRENT_USER;
+  // User info from CRMContext (dynamic) with fallback to central constant
+  const userName = crm.currentUser?.name ?? CURRENT_USER.name;
+  const userRole = crm.currentUser?.role ?? CURRENT_USER.role;
+  const imageUrl = crm.currentUser?.avatarUrl ?? CURRENT_USER.imageUrl;
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 md:static ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'} border-r ${theme.border} flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out ${
+      suppressHydrationWarning
+      className={`fixed inset-y-0 left-0 z-50 md:static ${theme.bgPanel} border-r ${theme.border} flex flex-col justify-between shrink-0 h-full ${
+        disableTransition ? '' : 'transition-all duration-300 ease-in-out'
+      } ${
         isMobileOpen ? 'translate-x-0 w-64 shadow-2xl' : '-translate-x-full md:translate-x-0'
       } ${isExpanded ? 'md:w-64' : 'md:w-16'}`}
     >
       <div>
         {/* Logo Header */}
-        <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between`}>
+        <div suppressHydrationWarning className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between`}>
           {showExpanded ? (
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div className="w-9 h-9 flex items-center justify-center shrink-0">
@@ -187,21 +194,22 @@ export function Sidebar({
       </div>
 
       {/* User Card */}
-      <div className={`p-3 border-t ${theme.border}`} ref={userMenuRef}>
+      <div suppressHydrationWarning className={`p-3 border-t ${theme.border}`} ref={userMenuRef}>
         {/* User Dropdown Menu */}
         {userMenuOpen && (
-          <div className={`absolute bottom-[72px] left-3 right-3 ${isDarkMode ? 'bg-[#202026]' : 'bg-white'} border ${theme.border} rounded-xl shadow-xl py-1.5 z-50 overflow-hidden`}>
-            <div className={`px-3 py-2 border-b ${theme.border}`}>
-              <p className={`text-xs font-semibold ${theme.textMain} truncate`}>{userName}</p>
-              <p className={`text-[11px] ${theme.textMuted} truncate`}>{userRole}</p>
-            </div>
-            <button
+          <div
+            className={`absolute ${
+              showExpanded ? 'bottom-[72px] left-3 right-3' : 'bottom-2 left-16 ml-2 w-44'
+            } bg-white dark:bg-[#202026] border ${theme.border} rounded-xl shadow-xl py-1.5 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100`}
+          >
+            <Link
+              href="/profile"
               onClick={() => { setUserMenuOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs ${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors`}
             >
               <UserCircleIcon className="w-4 h-4 shrink-0" />
               Profile
-            </button>
+            </Link>
             <Link
               href="/settings"
               onClick={() => { setUserMenuOpen(false); }}
@@ -225,7 +233,7 @@ export function Sidebar({
         {showExpanded ? (
           <button
             onClick={() => setUserMenuOpen((v) => !v)}
-            className={`w-full ${isDarkMode ? 'bg-[#202026]' : 'bg-[#F1F5F9]'} rounded-xl p-2.5 border ${theme.border} flex items-center gap-2.5 hover:border-primary/30 transition-colors group`}
+            className={`w-full bg-[#F1F5F9] dark:bg-[#202026] rounded-xl p-2.5 border ${theme.border} flex items-center gap-2.5 hover:border-primary/30 transition-colors group`}
           >
             <Avatar name={userName} imageUrl={imageUrl} size="md" />
 

@@ -32,13 +32,7 @@ export function MeetingsTable({
           <h2 className={`text-base font-bold ${theme.textMain} fira-sans-bold`}>
             Booked Meetings
           </h2>
-          <span
-            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-              isDarkMode
-                ? 'bg-blue-950/70 text-blue-300 border-blue-800'
-                : 'bg-blue-50 text-primary border-primary/20'
-            } border ml-1`}
-          >
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full border ml-1 bg-blue-50 text-primary border-primary/20 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800">
             {meetings.length}
           </span>
         </div>

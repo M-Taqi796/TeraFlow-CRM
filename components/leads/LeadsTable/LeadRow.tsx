@@ -8,45 +8,29 @@ interface LeadRowProps {
   onRowClick: (lead: Lead) => void;
 }
 
-const STAGE_COLORS_LIGHT: Record<LeadStage, string> = {
-  'New':           'bg-gray-100 text-gray-700 border-gray-300',
-  'Lead':          'bg-gray-100 text-gray-700 border-gray-300',
-  'Contacted':     'bg-blue-50 text-primary border-primary/40',
-  'Qualified':     'bg-violet-50 text-violet-700 border-violet-300',
-  'Hot Prospect':  'bg-amber-50 text-amber-700 border-amber-300',
-  'Proposal Sent': 'bg-amber-50 text-amber-700 border-amber-300',
-  'Negotiation':   'bg-orange-50 text-orange-700 border-orange-300',
-  'Won':           'bg-emerald-50 text-emerald-700 border-emerald-300',
-  'Lost':          'bg-rose-50 text-rose-700 border-rose-300',
-  'Past Client':   'bg-emerald-50 text-emerald-700 border-emerald-300',
-  'Trash':         'bg-rose-50 text-rose-700 border-rose-300',
+const STAGE_TEXT_COLORS: Record<LeadStage, string> = {
+  'New':           'text-slate-500 dark:text-zinc-400 font-semibold',
+  'Lead':          'text-slate-500 dark:text-zinc-400 font-semibold',
+  'Contacted':     'text-blue-600 dark:text-blue-400 font-semibold',
+  'Qualified':     'text-violet-600 dark:text-violet-400 font-semibold',
+  'Hot Prospect':  'text-amber-600 dark:text-amber-400 font-semibold',
+  'Proposal Sent': 'text-amber-600 dark:text-amber-400 font-semibold',
+  'Negotiation':   'text-orange-600 dark:text-orange-400 font-semibold',
+  'Won':           'text-emerald-600 dark:text-emerald-400 font-semibold',
+  'Lost':          'text-rose-600 dark:text-rose-400 font-semibold',
+  'Past Client':   'text-teal-600 dark:text-teal-400 font-semibold',
+  'Trash':         'text-rose-600 dark:text-rose-400 font-semibold',
 };
 
-const STAGE_COLORS_DARK: Record<LeadStage, string> = {
-  'New':           'bg-zinc-800 text-zinc-300 border-zinc-700',
-  'Lead':          'bg-zinc-800 text-zinc-300 border-zinc-700',
-  'Contacted':     'bg-blue-950/70 text-blue-300 border-blue-800',
-  'Qualified':     'bg-violet-950/70 text-violet-300 border-violet-800',
-  'Hot Prospect':  'bg-amber-950/70 text-amber-300 border-amber-800',
-  'Proposal Sent': 'bg-amber-950/70 text-amber-300 border-amber-800',
-  'Negotiation':   'bg-orange-950/70 text-orange-300 border-orange-800',
-  'Won':           'bg-emerald-950/70 text-emerald-300 border-emerald-800',
-  'Lost':          'bg-rose-950/70 text-rose-300 border-rose-800',
-  'Past Client':   'bg-emerald-950/70 text-emerald-300 border-emerald-800',
-  'Trash':         'bg-rose-950/70 text-rose-300 border-rose-800',
-};
-
-const PRIORITY_CONFIG: Record<LeadPriority, { dot: string; label: string; textLight: string; textDark: string }> = {
-  Low:    { dot: 'bg-gray-400',   label: 'Low',    textLight: 'text-gray-500',  textDark: 'text-zinc-400' },
-  Medium: { dot: 'bg-amber-500',  label: 'Medium', textLight: 'text-amber-600', textDark: 'text-amber-400' },
-  High:   { dot: 'bg-rose-500',   label: 'High',   textLight: 'text-rose-600',  textDark: 'text-rose-400' },
+const PRIORITY_CONFIG: Record<LeadPriority, { dot: string; label: string; text: string }> = {
+  Low:    { dot: 'bg-gray-400',   label: 'Low',    text: 'text-gray-500 dark:text-zinc-400' },
+  Medium: { dot: 'bg-amber-500',  label: 'Medium', text: 'text-amber-600 dark:text-amber-400' },
+  High:   { dot: 'bg-rose-500',   label: 'High',   text: 'text-rose-600 dark:text-rose-400' },
 };
 
 export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
-  const { isDarkMode, theme } = useThemeContext();
-
-  const stageClass = isDarkMode ? STAGE_COLORS_DARK[l.stage] : STAGE_COLORS_LIGHT[l.stage];
-  const prio       = PRIORITY_CONFIG[l.priority];
+  const { theme } = useThemeContext();
+  const prio = PRIORITY_CONFIG[l.priority];
 
   const dealStr = l.dealValue >= 1000
     ? `$${(l.dealValue / 1000).toFixed(1)}k`
@@ -80,7 +64,7 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
 
       {/* Priority */}
       <td className="py-3.5 px-4 whitespace-nowrap">
-        <span className={`flex items-center gap-1.5 text-xs font-semibold ${isDarkMode ? prio.textDark : prio.textLight}`}>
+        <span className={`flex items-center gap-1.5 text-xs font-semibold ${prio.text}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${prio.dot} shrink-0`} />
           {prio.label}
         </span>
@@ -91,7 +75,7 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
         {l.assignedTo}
       </td>
 
-      {/* Stage selector — stops row click propagation */}
+      {/* Stage selector — simple colored text, no chips */}
       <td
         className="py-3.5 px-4 whitespace-nowrap"
         onClick={(e) => e.stopPropagation()}
@@ -100,13 +84,13 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
           value={l.stage}
           onChange={(e) => onStageChange(l.id, e.target.value as LeadStage)}
           aria-label={`Stage for ${l.businessName}`}
-          className={`text-xs font-semibold py-1 px-2.5 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${stageClass}`}
+          className={`text-xs py-0.5 px-0 bg-transparent border-none focus:outline-none cursor-pointer ${STAGE_TEXT_COLORS[l.stage]}`}
         >
           {LEAD_STAGES.map((s) => (
             <option
               key={s}
               value={s}
-              className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6] font-normal' : 'bg-white text-[#2C2C2C] font-normal'}
+              className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal"
             >
               {s}
             </option>

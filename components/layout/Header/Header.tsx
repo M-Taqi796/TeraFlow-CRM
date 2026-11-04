@@ -15,6 +15,7 @@ interface HeaderProps {
 function usePageTitle(): string {
   const pathname = usePathname();
   if (!pathname) return 'Dashboard';
+  if (pathname === '/profile' || pathname.startsWith('/profile')) return 'Profile';
   if (pathname === '/settings' || pathname.startsWith('/settings')) return 'Settings';
   const match = STATIC_NAV_ITEMS.find(
     (item) =>

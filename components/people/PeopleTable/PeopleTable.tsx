@@ -92,16 +92,16 @@ export function PeopleTable({
   const isAllSelected = people.length > 0 && selectedIds.length === people.length;
   const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < people.length;
 
-  const getStageStyle = (stage: PersonStage): { pill: string; text: string } => {
+  const getStageTextColor = (stage: PersonStage): string => {
     switch (stage) {
-      case 'New Leads':     return { pill: 'bg-slate-100 dark:bg-zinc-800',      text: 'text-slate-500 dark:text-zinc-400' };
-      case 'Contacted':     return { pill: 'bg-blue-50 dark:bg-blue-950/40',     text: 'text-blue-500 dark:text-blue-400' };
-      case 'Booked':        return { pill: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-600 dark:text-violet-400' };
-      case 'Follow-Up':     return { pill: 'bg-amber-50 dark:bg-amber-950/40',   text: 'text-amber-500 dark:text-amber-400' };
-      case 'Closed':        return { pill: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-600 dark:text-emerald-400' };
-      case 'Denied':        return { pill: 'bg-rose-50 dark:bg-rose-950/40',     text: 'text-rose-500 dark:text-rose-400' };
-      case 'Past Clients':  return { pill: 'bg-teal-50 dark:bg-teal-950/40',     text: 'text-teal-600 dark:text-teal-400' };
-      default:              return { pill: 'bg-slate-100 dark:bg-zinc-800',      text: 'text-slate-500 dark:text-zinc-400' };
+      case 'New Leads':     return 'text-slate-500 dark:text-zinc-400 font-semibold';
+      case 'Contacted':     return 'text-blue-600 dark:text-blue-400 font-semibold';
+      case 'Booked':        return 'text-violet-600 dark:text-violet-400 font-semibold';
+      case 'Follow-Up':     return 'text-amber-600 dark:text-amber-400 font-semibold';
+      case 'Closed':        return 'text-emerald-600 dark:text-emerald-400 font-semibold';
+      case 'Denied':        return 'text-rose-600 dark:text-rose-400 font-semibold';
+      case 'Past Clients':  return 'text-teal-600 dark:text-teal-400 font-semibold';
+      default:              return 'text-slate-500 dark:text-zinc-400 font-semibold';
     }
   };
 
@@ -192,10 +192,8 @@ export function PeopleTable({
                     key={person.id}
                     className={`group transition-colors cursor-pointer border-b border-slate-200 dark:border-zinc-800 ${
                       isSelected
-                        ? isDarkMode
-                          ? 'bg-blue-950/20'
-                          : 'bg-blue-50/50'
-                        : isDarkMode ? 'hover:bg-[#202028]' : 'hover:bg-[#F0F8FE]'
+                        ? 'bg-blue-50/50 dark:bg-blue-950/20'
+                        : 'hover:bg-[#F0F8FE] dark:hover:bg-[#202028]'
                     }`}
                     onClick={() => onSelectPerson(person)}
                   >
@@ -338,35 +336,24 @@ export function PeopleTable({
                       </div>
                     </td>
 
-                    {/* Stage — styled pill with native select overlay */}
+                    {/* Stage — simple colored text with native select */}
                     <td className="py-3 px-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-flex">
-                        <span
-                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${getStageStyle(person.stage).pill} ${getStageStyle(person.stage).text} pointer-events-none`}
-                        >
-                          {person.stage}
-                        </span>
-                        <select
-                          value={person.stage}
-                          onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
-                          aria-label={`Stage for ${person.businessName}`}
-                          className="absolute inset-0 opacity-0 w-full cursor-pointer"
-                        >
-                          {PERSON_STAGES.map((stg) => (
-                            <option
-                              key={stg}
-                              value={stg}
-                              className={
-                                isDarkMode
-                                  ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
-                                  : 'bg-white text-[#2C2C2C] font-normal'
-                              }
-                            >
-                              {stg}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <select
+                        value={person.stage}
+                        onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
+                        aria-label={`Stage for ${person.businessName}`}
+                        className={`text-xs py-0.5 px-0 bg-transparent border-none focus:outline-none cursor-pointer ${getStageTextColor(person.stage)}`}
+                      >
+                        {PERSON_STAGES.map((stg) => (
+                          <option
+                            key={stg}
+                            value={stg}
+                            className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal"
+                          >
+                            {stg}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                   </tr>
                 );

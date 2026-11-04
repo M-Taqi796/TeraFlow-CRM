@@ -56,11 +56,7 @@ export function MeetingRow({ meeting: m, onStatusChange }: MeetingRowProps) {
             <option
               key={st}
               value={st}
-              className={
-                isDarkMode
-                  ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
-                  : 'bg-white text-[#2C2C2C] font-normal'
-              }
+              className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal"
             >
               {st}
             </option>

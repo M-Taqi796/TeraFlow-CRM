@@ -91,34 +91,22 @@ export function CallsView() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusTextColor = (status: string) => {
     switch (status) {
       case 'Answered':
-        return isDarkMode
-          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800'
-          : 'bg-emerald-50 text-emerald-700 border-emerald-300';
+        return 'text-emerald-600 dark:text-emerald-400 font-semibold';
       case 'Not answered':
       case 'Missed':
-        return isDarkMode
-          ? 'bg-amber-950/70 text-amber-300 border-amber-800'
-          : 'bg-amber-50 text-amber-700 border-amber-300';
+        return 'text-amber-600 dark:text-amber-400 font-semibold';
       case 'Call failed':
       case 'Wrong Number':
-        return isDarkMode
-          ? 'bg-rose-950/70 text-rose-300 border-rose-800'
-          : 'bg-rose-50 text-rose-700 border-rose-300';
+        return 'text-rose-600 dark:text-rose-400 font-semibold';
       case 'Busy':
-        return isDarkMode
-          ? 'bg-violet-950/70 text-violet-300 border-violet-800'
-          : 'bg-violet-50 text-violet-700 border-violet-300';
+        return 'text-violet-600 dark:text-violet-400 font-semibold';
       case 'Left Voicemail':
-        return isDarkMode
-          ? 'bg-blue-950/70 text-blue-300 border-blue-800'
-          : 'bg-blue-50 text-blue-700 border-blue-300';
+        return 'text-blue-600 dark:text-blue-400 font-semibold';
       default:
-        return isDarkMode
-          ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
-          : 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'text-slate-600 dark:text-zinc-400 font-semibold';
     }
   };
 
@@ -293,13 +281,9 @@ export function CallsView() {
                       )}
                     </td>
 
-                    {/* Call Status Badge */}
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${getStatusBadge(
-                          log.callStatus
-                        )}`}
-                      >
+                    {/* Call Status */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className={`text-xs ${getStatusTextColor(log.callStatus)}`}>
                         {log.callStatus}
                       </span>
                     </td>

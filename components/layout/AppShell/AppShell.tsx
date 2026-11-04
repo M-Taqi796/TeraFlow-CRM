@@ -23,6 +23,8 @@ interface AppShellProps {
   unreadNav?: Record<string, boolean>;
   navCounts?: Record<string, number>;
   onLogout?: () => void;
+  initialNavExpanded?: boolean;
+  initialTaskbarExpanded?: boolean;
 }
 
 export function AppShell({
@@ -35,6 +37,8 @@ export function AppShell({
   unreadNav: propUnreadNav,
   navCounts: propNavCounts,
   onLogout: propOnLogout,
+  initialNavExpanded = true,
+  initialTaskbarExpanded = true,
 }: AppShellProps) {
   const { isDarkMode, theme } = useThemeContext();
   const crm = useCRM();
@@ -67,14 +71,53 @@ export function AppShell({
     }
   };
 
-  const [isNavExpanded, setIsNavExpanded]         = useState(true);
-  const [isMobileNavOpen, setIsMobileNavOpen]     = useState(false);
-  const [isTaskbarExpanded, setIsTaskbarExpanded] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Initialize from server-passed cookie prop (exact match between SSR and hydration)
+  const [isNavExpanded, setIsNavExpanded] = useState<boolean>(initialNavExpanded);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  const [isTaskbarExpanded, setIsTaskbarExpanded] = useState<boolean>(initialTaskbarExpanded);
   const [isMobileTasksOpen, setIsMobileTasksOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Sync client localStorage / cookie if available
+    try {
+      const storedNav = localStorage.getItem('teraflow_nav_expanded');
+      if (storedNav !== null) {
+        const val = storedNav === 'true';
+        setIsNavExpanded(val);
+        document.cookie = `teraflow_nav_expanded=${val}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      const storedTaskbar = localStorage.getItem('teraflow_taskbar_expanded');
+      if (storedTaskbar !== null) {
+        const val = storedTaskbar === 'true';
+        setIsTaskbarExpanded(val);
+        document.cookie = `teraflow_taskbar_expanded=${val}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+    } catch {}
+  }, []);
+
+  const handleNavExpandedChange = (expanded: boolean) => {
+    setIsNavExpanded(expanded);
+    try {
+      localStorage.setItem('teraflow_nav_expanded', String(expanded));
+      document.cookie = `teraflow_nav_expanded=${expanded}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {}
+  };
+
+  const handleTaskbarExpandedChange = (expanded: boolean) => {
+    setIsTaskbarExpanded(expanded);
+    try {
+      localStorage.setItem('teraflow_taskbar_expanded', String(expanded));
+      document.cookie = `teraflow_taskbar_expanded=${expanded}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {}
+  };
 
   return (
     <div
-      className={`h-screen w-screen ${theme.bgApp} flex ${theme.textMain} overflow-hidden antialiased transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}
+      className={`h-screen w-screen ${theme.bgApp} flex ${theme.textMain} overflow-hidden antialiased transition-colors duration-150`}
     >
       {/* Mobile Nav Backdrop */}
       {isMobileNavOpen && (
@@ -91,12 +134,13 @@ export function AppShell({
         selectedNav={selectedNav}
         onNavChange={onNavChange}
         isExpanded={isNavExpanded}
-        onExpandedChange={setIsNavExpanded}
+        onExpandedChange={handleNavExpandedChange}
         isMobileOpen={isMobileNavOpen}
         onMobileClose={() => setIsMobileNavOpen(false)}
         unreadNav={unreadNav}
         navCounts={navCounts}
         onLogout={onLogout}
+        disableTransition={!isMounted}
       />
 
       {/* Center Column */}
@@ -120,9 +164,10 @@ export function AppShell({
         onCompleteTask={handleTaskComplete}
         onUncompleteTask={(task) => crm.onToggleTaskStatus(task.id)}
         isExpanded={isTaskbarExpanded}
-        onExpandedChange={setIsTaskbarExpanded}
+        onExpandedChange={handleTaskbarExpandedChange}
         isMobileOpen={isMobileTasksOpen}
         onMobileClose={() => setIsMobileTasksOpen(false)}
+        disableTransition={!isMounted}
       />
 
       {/* Global New Lead / Add Contact Modal */}

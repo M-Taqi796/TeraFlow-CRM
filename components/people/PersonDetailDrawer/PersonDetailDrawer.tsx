@@ -759,11 +759,7 @@ export function PersonDetailDrawer({
                 <option
                   key={stg}
                   value={stg}
-                  className={
-                    isDarkMode
-                      ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
-                      : 'bg-white text-[#2C2C2C] font-normal'
-                  }
+                  className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal"
                 >
                   {stg}
                 </option>

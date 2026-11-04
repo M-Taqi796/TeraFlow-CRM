@@ -22,6 +22,7 @@ interface TaskbarProps {
   /** Mobile drawer */
   isMobileOpen: boolean;
   onMobileClose: () => void;
+  disableTransition?: boolean;
 }
 
 function TaskbarHeader({
@@ -65,12 +66,12 @@ function TaskbarHeader({
 
   if (isExpanded) {
     return (
-      <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between shrink-0 ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'}`}>
+      <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between shrink-0 ${theme.bgPanel}`}>
         <div className="flex items-center gap-2">
           <CheckCircleIcon className="w-5 h-5 text-primary" />
           <h3 className={`text-sm font-bold ${theme.textMain} fira-sans-bold`}>Tasks</h3>
           {activeCount > 0 && (
-            <span className="text-[11px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full ml-1 tabular-nums">
+            <span className="text-[11px] bg-primary/10 dark:bg-primary/20 text-primary font-bold px-2 py-0.5 rounded-full ml-1 tabular-nums">
               {activeCount}
             </span>
           )}
@@ -87,7 +88,7 @@ function TaskbarHeader({
   }
 
   return (
-    <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'}`}>
+    <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-center shrink-0 ${theme.bgPanel}`}>
       <button
         onClick={onExpand}
         title="Expand tasks panel"
@@ -149,6 +150,7 @@ export function Taskbar({
   onExpandedChange,
   isMobileOpen,
   onMobileClose,
+  disableTransition = false,
 }: TaskbarProps) {
   const { theme } = useThemeContext();
   const crm = useCRM();
@@ -191,7 +193,10 @@ export function Taskbar({
     <>
       {/* Desktop Taskbar */}
       <aside
-        className={`hidden lg:flex border-l ${theme.border} ${theme.bgPanel} flex-col shrink-0 h-full transition-all duration-200 ${
+        suppressHydrationWarning
+        className={`hidden lg:flex border-l ${theme.border} ${theme.bgPanel} flex-col shrink-0 h-full ${
+          disableTransition ? '' : 'transition-all duration-200'
+        } ${
           isExpanded ? 'w-80' : 'w-14'
         }`}
       >

@@ -219,7 +219,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
                 className={inputClass()}
               >
                 {LEAD_STAGES.map((s) => (
-                  <option key={s} value={s} className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}>
+                  <option key={s} value={s} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
                     {s}
                   </option>
                 ))}
@@ -236,7 +236,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
                 className={inputClass()}
               >
                 {LEAD_PRIORITIES.map((p) => (
-                  <option key={p} value={p} className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}>
+                  <option key={p} value={p} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
                     {p}
                   </option>
                 ))}
@@ -253,7 +253,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
                 className={inputClass()}
               >
                 {LEAD_SOURCES.map((src) => (
-                  <option key={src} value={src} className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}>
+                  <option key={src} value={src} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
                     {src}
                   </option>
                 ))}

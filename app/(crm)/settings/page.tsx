@@ -1,10 +1,10 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { SettingsView } from '@/components/settings/SettingsView/SettingsView';
+
+export const metadata = {
+  title: 'Settings & Preferences | TeraFlow CRM',
+  description: 'Manage CRM settings, account security, team permissions, and workspace preferences.',
+};
 
 export default function SettingsPage() {
-  return (
-    <PlaceholderView
-      title="CRM Settings & Preferences"
-      description="Configure custom fields, tags, smart lists, lead routing rules, and account preferences."
-    />
-  );
+  return <SettingsView />;
 }

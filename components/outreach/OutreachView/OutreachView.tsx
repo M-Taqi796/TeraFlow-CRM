@@ -93,15 +93,11 @@ export function OutreachView() {
     }
   };
 
-  const getTypeBadge = (type: string) => {
+  const getTypeTextColor = (type: string) => {
     if (type === 'Reply') {
-      return isDarkMode
-        ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800'
-        : 'bg-emerald-50 text-emerald-700 border-emerald-300';
+      return 'text-emerald-600 dark:text-emerald-400 font-semibold';
     }
-    return isDarkMode
-      ? 'bg-blue-950/70 text-blue-300 border-blue-800'
-      : 'bg-blue-50 text-blue-700 border-blue-300';
+    return 'text-blue-600 dark:text-blue-400 font-semibold';
   };
 
   const formatDateTime = (iso: string) => {
@@ -276,13 +272,9 @@ export function OutreachView() {
                       )}
                     </td>
 
-                    {/* Type Badge */}
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border ${getTypeBadge(
-                          log.emailType
-                        )}`}
-                      >
+                    {/* Type */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className={`text-xs ${getTypeTextColor(log.emailType)}`}>
                         {log.emailType === 'Sent' ? 'Sent' : 'Received'}
                       </span>
                     </td>

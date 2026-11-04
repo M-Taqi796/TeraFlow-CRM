@@ -108,7 +108,7 @@ export function PeopleFilters({
               <option
                 key={stg}
                 value={stg}
-                className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#1E293B]'}
+                className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
               >
                 {stg}
               </option>
@@ -130,7 +130,7 @@ export function PeopleFilters({
               <option
                 key={n}
                 value={n}
-                className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#1E293B]'}
+                className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
               >
                 {n}
               </option>
@@ -152,7 +152,7 @@ export function PeopleFilters({
               <option
                 key={c}
                 value={c}
-                className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#1E293B]'}
+                className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
               >
                 {c}
               </option>
@@ -174,7 +174,7 @@ export function PeopleFilters({
               <option
                 key={tag}
                 value={tag}
-                className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#1E293B]'}
+                className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
               >
                 {tag}
               </option>

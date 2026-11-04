@@ -1,11 +1,10 @@
-import { PlaceholderView } from '@/components/ui/PlaceholderView/PlaceholderView';
+import { TeamsView } from '@/components/teams/TeamsView';
+
+export const metadata = {
+  title: 'Teams & Permissions | TeraFlow CRM',
+  description: 'Manage team roster, roles, credentials, and access control.',
+};
 
 export default function TeamsPage() {
-  return (
-    <PlaceholderView
-      useLogo
-      title="Team Members & Roles Coming Soon"
-      description="Manage team member roles, task assignments, permissions, and department collaboration."
-    />
-  );
+  return <TeamsView />;
 }

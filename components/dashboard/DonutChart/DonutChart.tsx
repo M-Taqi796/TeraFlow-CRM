@@ -39,7 +39,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
             <option
               key={p}
               value={p}
-              className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}
+              className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
             >
               {p}
             </option>

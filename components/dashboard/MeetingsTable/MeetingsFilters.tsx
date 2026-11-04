@@ -50,7 +50,7 @@ export function MeetingsFilters({
         >
           <option
             value="All"
-            className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}
+            className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
           >
             All Statuses
           </option>
@@ -58,7 +58,7 @@ export function MeetingsFilters({
             <option
               key={st}
               value={st}
-              className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}
+              className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]"
             >
               {st}
             </option>

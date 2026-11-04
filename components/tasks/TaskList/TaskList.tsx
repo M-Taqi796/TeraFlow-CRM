@@ -89,13 +89,7 @@ export function TaskList({
 
                 {/* Completion Comment if any */}
                 {t.completionComment && (
-                  <div
-                    className={`text-[11px] ${
-                      isDarkMode
-                        ? 'text-blue-300 bg-blue-950/20 border-blue-900/40'
-                        : 'text-blue-700 bg-blue-50/50 border-blue-200/50'
-                    } p-2 rounded-lg border italic`}
-                  >
+                  <div className="text-[11px] text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40 p-2 rounded-lg italic">
                     Note: {t.completionComment}
                   </div>
                 )}

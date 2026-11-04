@@ -194,7 +194,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                   <option
                     key={s}
                     value={s}
-                    className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6] font-normal' : 'bg-white text-[#2C2C2C] font-normal'}
+                    className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal"
                   >
                     {s}
                   </option>
@@ -214,7 +214,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${theme.inputBg} ${theme.inputBorder} ${theme.textMain}`}
               >
                 {LEAD_PRIORITIES.map((p) => (
-                  <option key={p} value={p} className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6] font-normal' : 'bg-white text-[#2C2C2C] font-normal'}>
+                  <option key={p} value={p} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal">
                     {p}
                   </option>
                 ))}
@@ -290,7 +290,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                     className={inputClass}
                   >
                     {LEAD_SOURCES.map((s) => (
-                      <option key={s} value={s} className={isDarkMode ? 'bg-[#18181C] text-[#F3F4F6]' : 'bg-white text-[#2C2C2C]'}>
+                      <option key={s} value={s} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
                         {s}
                       </option>
                     ))}
