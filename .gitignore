@@ -19,8 +19,12 @@ next-env.d.ts
 .DS_Store
 *.pem
 
-# Local env files
-.env*.local
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*
+!.env.example
+
 
 # Vercel
 .vercel
