@@ -1,8 +1,18 @@
+import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronLeftIcon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import {
+  ChevronLeftIcon,
+  XMarkIcon,
+  ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
+  UserCircleIcon,
+  ChevronUpIcon,
+} from '@heroicons/react/24/outline';
 import { NavItem } from '../../navigation/NavItem';
 import { useThemeContext } from '@/context/ThemeContext';
 import { STATIC_NAV_ITEMS } from '@/data/navigation.data';
+import { CURRENT_USER, useCRM } from '@/context/CRMContext';
 
 /** Derive initials from a full name, e.g. "Muhammad Taqi" → "MT" */
 function getInitials(name: string): string {
@@ -47,7 +57,9 @@ interface SidebarProps {
   onExpandedChange: (expanded: boolean) => void;
   isMobileOpen: boolean;
   onMobileClose: () => void;
-  /** Dynamic badge counts keyed by nav item name */
+  /** Unread state keyed by nav item name */
+  unreadNav?: Record<string, boolean>;
+  /** Dynamic badge counts keyed by nav item name (deprecated) */
   navCounts?: Record<string, number>;
   onLogout: () => void;
 }
@@ -59,22 +71,43 @@ export function Sidebar({
   onExpandedChange,
   isMobileOpen,
   onMobileClose,
+  unreadNav: propUnreadNav,
   navCounts = {},
   onLogout,
 }: SidebarProps) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode } = useThemeContext();
+  const crm = useCRM();
+  const unreadNav = propUnreadNav ?? crm.unreadNav;
   const pathname = usePathname();
 
   const showExpanded = isExpanded || isMobileOpen;
 
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleNavClick = (name: string) => {
+    crm.markNavAsRead(name);
     onNavChange?.(name);
     onMobileClose();
   };
 
+  // User info from central constant — swap with auth context when ready
+  const { name: userName, role: userRole, imageUrl } = CURRENT_USER;
+
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 md:static ${theme.bgPanel} border-r ${theme.border} flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out ${
+      className={`fixed inset-y-0 left-0 z-50 md:static ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'} border-r ${theme.border} flex flex-col justify-between shrink-0 h-full transition-all duration-300 ease-in-out ${
         isMobileOpen ? 'translate-x-0 w-64 shadow-2xl' : '-translate-x-full md:translate-x-0'
       } ${isExpanded ? 'md:w-64' : 'md:w-16'}`}
     >
@@ -98,8 +131,8 @@ export function Sidebar({
           ) : (
             <button
               onClick={() => onExpandedChange(true)}
-              title="Expand navbar"
-              className="hidden md:flex mx-auto p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-all group"
+              title="Expand sidebar"
+              className="hidden md:flex mx-auto p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] transition-all group"
             >
               <img
                 src="/logo.png"
@@ -113,8 +146,8 @@ export function Sidebar({
           {isExpanded && (
             <button
               onClick={() => onExpandedChange(false)}
-              title="Collapse navbar"
-              className={`hidden md:flex p-1.5 ${theme.textMuted} hover:${theme.textMain} ${theme.hoverBg} rounded-lg transition-colors shrink-0`}
+              title="Collapse sidebar"
+              className={`hidden md:flex p-1.5 ${theme.textMuted} hover:${theme.textMain} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] rounded-lg transition-colors shrink-0`}
             >
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
@@ -123,14 +156,14 @@ export function Sidebar({
           {/* Mobile close */}
           <button
             onClick={onMobileClose}
-            className={`md:hidden p-1.5 ${theme.textMuted} hover:${theme.textMain}`}
+            className={`md:hidden p-1.5 ${theme.textMuted}`}
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Nav Items */}
-        <nav className="p-2 space-y-1">
+        <nav className="p-2 space-y-0.5 mt-1">
           {STATIC_NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -143,7 +176,7 @@ export function Sidebar({
                 name={item.name}
                 href={item.href}
                 icon={item.icon}
-                count={navCounts[item.name]}
+                hasUnread={Boolean(unreadNav[item.name]) && !isActive}
                 isActive={isActive}
                 isExpanded={showExpanded}
                 onClick={() => handleNavClick(item.name)}
@@ -154,41 +187,71 @@ export function Sidebar({
       </div>
 
       {/* User Card */}
-      <div className={`p-3 border-t ${theme.border}`}>
-        {showExpanded ? (
-          <div className={`${theme.bgSubtle} rounded-xl p-2.5 border ${theme.border} flex items-center gap-2.5`}>
-            {/* Avatar — left of name */}
-            <Avatar name="Muhammad Taqi" size="md" />
+      <div className={`p-3 border-t ${theme.border}`} ref={userMenuRef}>
+        {/* User Dropdown Menu */}
+        {userMenuOpen && (
+          <div className={`absolute bottom-[72px] left-3 right-3 ${isDarkMode ? 'bg-[#202026]' : 'bg-white'} border ${theme.border} rounded-xl shadow-xl py-1.5 z-50 overflow-hidden`}>
+            <div className={`px-3 py-2 border-b ${theme.border}`}>
+              <p className={`text-xs font-semibold ${theme.textMain} truncate`}>{userName}</p>
+              <p className={`text-[11px] ${theme.textMuted} truncate`}>{userRole}</p>
+            </div>
+            <button
+              onClick={() => { setUserMenuOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs ${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors`}
+            >
+              <UserCircleIcon className="w-4 h-4 shrink-0" />
+              Profile
+            </button>
+            <Link
+              href="/settings"
+              onClick={() => { setUserMenuOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs ${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors`}
+            >
+              <Cog6ToothIcon className="w-4 h-4 shrink-0" />
+              Settings
+            </Link>
+            <div className={`border-t ${theme.border} mt-1 pt-1`}>
+              <button
+                onClick={() => { setUserMenuOpen(false); onLogout(); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4 shrink-0" />
+                Log out
+              </button>
+            </div>
+          </div>
+        )}
 
-            <div className="overflow-hidden flex-1 min-w-0">
+        {showExpanded ? (
+          <button
+            onClick={() => setUserMenuOpen((v) => !v)}
+            className={`w-full ${isDarkMode ? 'bg-[#202026]' : 'bg-[#F1F5F9]'} rounded-xl p-2.5 border ${theme.border} flex items-center gap-2.5 hover:border-primary/30 transition-colors group`}
+          >
+            <Avatar name={userName} imageUrl={imageUrl} size="md" />
+
+            <div className="overflow-hidden flex-1 min-w-0 text-left">
               <p className={`text-sm font-semibold ${theme.textMain} truncate leading-tight`}>
-                Muhammad Taqi
+                {userName}
               </p>
               <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                ADMIN
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                {userRole}
               </div>
             </div>
 
-            <button
-              onClick={onLogout}
-              title="Log out"
-              className="p-2 text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer shrink-0"
-              aria-label="Log out"
-            >
-              <ArrowRightOnRectangleIcon className="w-4 h-4" />
-            </button>
-          </div>
+            <ChevronUpIcon
+              className={`w-3.5 h-3.5 shrink-0 ${theme.textMuted} transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
         ) : (
-          /* Collapsed — show just the avatar circle, clicking logs out */
-          <div className="flex flex-col items-center py-1 gap-1">
+          /* Collapsed — clicking avatar opens the user menu */
+          <div className="flex flex-col items-center py-1">
             <button
-              onClick={onLogout}
-              title="Log out (Muhammad Taqi – ADMIN)"
-              className="p-0.5 rounded-full transition-all hover:ring-2 hover:ring-rose-400/50 cursor-pointer"
-              aria-label="Log out"
+              onClick={() => setUserMenuOpen((v) => !v)}
+              title={`${userName} — ${userRole}`}
+              className={`p-0.5 rounded-full transition-all ${userMenuOpen ? 'ring-2 ring-primary/50' : 'hover:ring-2 hover:ring-primary/30'}`}
             >
-              <Avatar name="Muhammad Taqi" size="sm" />
+              <Avatar name={userName} imageUrl={imageUrl} size="sm" />
             </button>
           </div>
         )}

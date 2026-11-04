@@ -105,7 +105,7 @@ export function TaskList({
                   <button
                     type="button"
                     onClick={() => onUncompleteTask(t)}
-                    className={`w-full py-1 px-2.5 rounded-lg border ${theme.border} text-[11px] font-medium ${theme.textMuted} hover:${theme.textMain} ${theme.hoverBg} transition-colors cursor-pointer text-center`}
+                    className={`w-full py-1 px-2.5 rounded-lg border ${theme.border} text-[11px] font-medium ${theme.textMuted} hover:text-[#1E293B] dark:hover:text-[#F3F4F6] hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] transition-colors cursor-pointer text-center`}
                   >
                     Mark as Pending
                   </button>

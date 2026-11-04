@@ -1,4 +1,4 @@
-import { ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
 import type { TimePeriod } from '@/types/metrics.types';
 import { TIME_PERIODS } from '@/data/metrics.data';
 import { useThemeContext } from '@/context/ThemeContext';
@@ -22,6 +22,9 @@ export function MetricCard({
 }: MetricCardProps) {
   const { isDarkMode, theme } = useThemeContext();
 
+  // Detect negative change — starts with "-" or contains "−"
+  const isNegative = change.trim().startsWith('-') || change.trim().startsWith('−');
+
   return (
     <div
       className={`p-5 ${theme.bgPanel} rounded-xl border ${theme.border} shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between`}
@@ -35,7 +38,7 @@ export function MetricCard({
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as TimePeriod)}
           aria-label={ariaLabel}
-          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md px-2 py-1 focus:outline-none cursor-pointer`}
+          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md px-2 py-1 focus:outline-none focus:border-primary cursor-pointer transition-colors`}
         >
           {TIME_PERIODS.map((p) => (
             <option
@@ -55,10 +58,17 @@ export function MetricCard({
           {value}
         </p>
         <div className={`mt-3 flex items-center text-xs pt-3 border-t ${theme.border}`}>
-          <span className="font-semibold text-primary flex items-center gap-1">
-            <ArrowTrendingUpIcon className="w-3.5 h-3.5" />
-            {change}
-          </span>
+          {isNegative ? (
+            <span className="font-semibold text-rose-500 flex items-center gap-1">
+              <ArrowTrendingDownIcon className="w-3.5 h-3.5" />
+              {change}
+            </span>
+          ) : (
+            <span className="font-semibold text-emerald-500 flex items-center gap-1">
+              <ArrowTrendingUpIcon className="w-3.5 h-3.5" />
+              {change}
+            </span>
+          )}
         </div>
       </div>
     </div>

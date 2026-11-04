@@ -1,5 +1,13 @@
 'use client';
 
+import { useState, useMemo, useEffect } from 'react';
+import {
+  ChevronUpDownIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/outline';
 import { useThemeContext } from '@/context/ThemeContext';
 import type { Person, PersonStage } from '@/types/person.types';
 import { PERSON_STAGES } from '@/types/person.types';
@@ -16,6 +24,11 @@ interface PeopleTableProps {
   onRemoveTag: (id: string, tag: string) => void;
 }
 
+type SortField = 'businessName' | 'niche' | 'stage';
+type SortOrder = 'asc' | 'desc';
+
+const PAGE_SIZE = 25;
+
 export function PeopleTable({
   people,
   selectedIds,
@@ -28,28 +41,79 @@ export function PeopleTable({
 }: PeopleTableProps) {
   const { isDarkMode, theme } = useThemeContext();
 
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 whenever the incoming dataset changes length
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [people.length]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else {
+        setSortField(null);
+        setSortOrder('asc');
+      }
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedPeople = useMemo(() => {
+    if (!sortField) return people;
+    return [...people].sort((a, b) => {
+      let valA = '';
+      let valB = '';
+      if (sortField === 'businessName') {
+        valA = a.businessName || '';
+        valB = b.businessName || '';
+      } else if (sortField === 'niche') {
+        valA = a.niche || '';
+        valB = b.niche || '';
+      } else if (sortField === 'stage') {
+        valA = a.stage || '';
+        valB = b.stage || '';
+      }
+      const cmp = valA.localeCompare(valB);
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+  }, [people, sortField, sortOrder]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedPeople.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
+  const paginatedPeople = sortedPeople.slice(startIndex, startIndex + PAGE_SIZE);
+
   const isAllSelected = people.length > 0 && selectedIds.length === people.length;
   const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < people.length;
 
-  const getStageTextColor = (stage: PersonStage) => {
+  const getStageStyle = (stage: PersonStage): { pill: string; text: string } => {
     switch (stage) {
-      case 'New Leads':
-        return 'text-slate-500 dark:text-zinc-400 font-semibold';
-      case 'Contacted':
-        return 'text-blue-500 dark:text-blue-400 font-semibold';
-      case 'Booked':
-        return 'text-violet-600 dark:text-violet-400 font-semibold';
-      case 'Follow-Up':
-        return 'text-amber-500 dark:text-amber-400 font-semibold';
-      case 'Closed':
-        return 'text-emerald-500 dark:text-emerald-400 font-semibold';
-      case 'Denied':
-        return 'text-rose-500 dark:text-rose-400 font-semibold';
-      case 'Past Clients':
-        return 'text-teal-500 dark:text-teal-400 font-semibold';
-      default:
-        return 'text-slate-500 dark:text-zinc-400 font-semibold';
+      case 'New Leads':     return { pill: 'bg-slate-100 dark:bg-zinc-800',      text: 'text-slate-500 dark:text-zinc-400' };
+      case 'Contacted':     return { pill: 'bg-blue-50 dark:bg-blue-950/40',     text: 'text-blue-500 dark:text-blue-400' };
+      case 'Booked':        return { pill: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-600 dark:text-violet-400' };
+      case 'Follow-Up':     return { pill: 'bg-amber-50 dark:bg-amber-950/40',   text: 'text-amber-500 dark:text-amber-400' };
+      case 'Closed':        return { pill: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-600 dark:text-emerald-400' };
+      case 'Denied':        return { pill: 'bg-rose-50 dark:bg-rose-950/40',     text: 'text-rose-500 dark:text-rose-400' };
+      case 'Past Clients':  return { pill: 'bg-teal-50 dark:bg-teal-950/40',     text: 'text-teal-600 dark:text-teal-400' };
+      default:              return { pill: 'bg-slate-100 dark:bg-zinc-800',      text: 'text-slate-500 dark:text-zinc-400' };
     }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronUpDownIcon className="w-3.5 h-3.5 text-slate-400 opacity-60 group-hover:opacity-100 transition-opacity" />;
+    }
+    return sortOrder === 'asc' ? (
+      <ChevronUpIcon className="w-3.5 h-3.5 text-primary stroke-[2.5]" />
+    ) : (
+      <ChevronDownIcon className="w-3.5 h-3.5 text-primary stroke-[2.5]" />
+    );
   };
 
   return (
@@ -72,18 +136,42 @@ export function PeopleTable({
               </th>
 
               {/* Required Columns */}
-              <th className="py-3 px-4 min-w-[200px]">Person / Contact</th>
+              <th
+                onClick={() => handleSort('businessName')}
+                className="py-3 px-4 min-w-[200px] cursor-pointer select-none group"
+              >
+                <div className="flex items-center gap-1.5 hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors">
+                  <span>Person / Contact</span>
+                  {renderSortIcon('businessName')}
+                </div>
+              </th>
               <th className="py-3 px-4 min-w-[140px]">Phone</th>
               <th className="py-3 px-4 min-w-[180px]">Email</th>
               <th className="py-3 px-4 min-w-[180px] max-w-[280px]">Tags</th>
               <th className="py-3 px-4 min-w-[200px]">Comment</th>
-              <th className="py-3 px-4 min-w-[150px]">Niche</th>
-              <th className="py-3 px-4 min-w-[120px]">Stage</th>
+              <th
+                onClick={() => handleSort('niche')}
+                className="py-3 px-4 min-w-[150px] cursor-pointer select-none group"
+              >
+                <div className="flex items-center gap-1.5 hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors">
+                  <span>Niche</span>
+                  {renderSortIcon('niche')}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('stage')}
+                className="py-3 px-4 min-w-[120px] cursor-pointer select-none group"
+              >
+                <div className="flex items-center gap-1.5 hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors">
+                  <span>Stage</span>
+                  {renderSortIcon('stage')}
+                </div>
+              </th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-xs">
-            {people.length === 0 ? (
+            {paginatedPeople.length === 0 ? (
               <tr>
                 <td colSpan={8} className={`py-12 text-center ${theme.textSubtle}`}>
                   <p className="text-sm font-semibold mb-1">No contacts match your current filters.</p>
@@ -91,7 +179,7 @@ export function PeopleTable({
                 </td>
               </tr>
             ) : (
-              people.map((person) => {
+              paginatedPeople.map((person) => {
                 const isSelected = selectedIds.includes(person.id);
                 const hasPersonName = Boolean(person.contactName?.trim());
                 const primaryPhone = person.phones[0] || '';
@@ -102,12 +190,12 @@ export function PeopleTable({
                 return (
                   <tr
                     key={person.id}
-                    className={`transition-colors cursor-pointer border-b border-slate-200 dark:border-zinc-800 ${
+                    className={`group transition-colors cursor-pointer border-b border-slate-200 dark:border-zinc-800 ${
                       isSelected
                         ? isDarkMode
                           ? 'bg-blue-950/20'
                           : 'bg-blue-50/50'
-                        : theme.rowHover
+                        : isDarkMode ? 'hover:bg-[#202028]' : 'hover:bg-[#F0F8FE]'
                     }`}
                     onClick={() => onSelectPerson(person)}
                   >
@@ -215,7 +303,8 @@ export function PeopleTable({
                             </button>
                           </span>
                         ))}
-                        <div className="shrink-0">
+                        {/* + Tag button: only visible on row hover (group-hover) */}
+                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                           <InlineTagEditor
                             existingTags={person.tags}
                             onAddTag={(tag) => onAddTag(person.id, tag)}
@@ -226,9 +315,13 @@ export function PeopleTable({
 
                     {/* Comment */}
                     <td className="py-3 px-4 max-w-[220px]">
-                      <span className={`text-xs ${theme.textMuted} line-clamp-2 block leading-relaxed`}>
-                        {person.notes || person.lastActivity?.summary || 'No comment added'}
-                      </span>
+                      {person.notes || person.lastActivity?.summary ? (
+                        <span className={`text-xs ${theme.textMuted} line-clamp-2 block leading-relaxed`}>
+                          {person.notes || person.lastActivity?.summary}
+                        </span>
+                      ) : (
+                        <span className={`text-xs ${theme.textSubtle}`}>&mdash;</span>
+                      )}
                     </td>
 
                     {/* Niche: Niche + City */}
@@ -245,30 +338,35 @@ export function PeopleTable({
                       </div>
                     </td>
 
-                    {/* Stage Dropdown (No background, no border, text colored only - same as in meeting) */}
+                    {/* Stage — styled pill with native select overlay */}
                     <td className="py-3 px-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <select
-                        value={person.stage}
-                        onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
-                        aria-label={`Stage for ${person.businessName}`}
-                        className={`text-xs py-0.5 px-1 bg-transparent border-none focus:outline-none cursor-pointer ${getStageTextColor(
-                          person.stage
-                        )}`}
-                      >
-                        {PERSON_STAGES.map((stg) => (
-                          <option
-                            key={stg}
-                            value={stg}
-                            className={
-                              isDarkMode
-                                ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
-                                : 'bg-white text-[#2C2C2C] font-normal'
-                            }
-                          >
-                            {stg}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative inline-flex">
+                        <span
+                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${getStageStyle(person.stage).pill} ${getStageStyle(person.stage).text} pointer-events-none`}
+                        >
+                          {person.stage}
+                        </span>
+                        <select
+                          value={person.stage}
+                          onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
+                          aria-label={`Stage for ${person.businessName}`}
+                          className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                        >
+                          {PERSON_STAGES.map((stg) => (
+                            <option
+                              key={stg}
+                              value={stg}
+                              className={
+                                isDarkMode
+                                  ? 'bg-[#18181C] text-[#F3F4F6] font-normal'
+                                  : 'bg-white text-[#2C2C2C] font-normal'
+                              }
+                            >
+                              {stg}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -277,6 +375,82 @@ export function PeopleTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      {sortedPeople.length > 0 && (
+        <div className={`px-4 py-3 border-t ${theme.border} ${theme.bgSubtle} flex flex-col sm:flex-row items-center justify-between gap-3 text-xs`}>
+          <div className={theme.textMuted}>
+            Showing <span className={`font-semibold ${theme.textMain}`}>{startIndex + 1}</span> to{' '}
+            <span className={`font-semibold ${theme.textMain}`}>
+              {Math.min(startIndex + PAGE_SIZE, sortedPeople.length)}
+            </span>{' '}
+            of <span className={`font-semibold ${theme.textMain}`}>{sortedPeople.length}</span> contacts
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safeCurrentPage === 1}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} font-medium transition-colors ${
+                  safeCurrentPage === 1
+                    ? 'opacity-40 cursor-not-allowed text-slate-400'
+                    : `cursor-pointer ${theme.textMain} hover:border-primary/40 hover:bg-[#F1F5F9] dark:hover:bg-[#25252D]`
+                }`}
+              >
+                <ChevronLeftIcon className="w-3.5 h-3.5" />
+                <span>Prev</span>
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - safeCurrentPage) <= 1
+                    );
+                  })
+                  .map((page, idx, arr) => {
+                    const prev = arr[idx - 1];
+                    const hasGap = prev && page - prev > 1;
+                    return (
+                      <span key={page} className="flex items-center gap-1">
+                        {hasGap && <span className={`px-1 ${theme.textSubtle}`}>…</span>}
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-7 h-7 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${
+                            page === safeCurrentPage
+                              ? 'bg-primary text-white shadow-xs'
+                              : `${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] hover:text-[#1E293B] dark:hover:text-[#F3F4F6]`
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </span>
+                    );
+                  })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safeCurrentPage === totalPages}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} font-medium transition-colors ${
+                  safeCurrentPage === totalPages
+                    ? 'opacity-40 cursor-not-allowed text-slate-400'
+                    : `cursor-pointer ${theme.textMain} hover:border-primary/40 hover:bg-[#F1F5F9] dark:hover:bg-[#25252D]`
+                }`}
+              >
+                <span>Next</span>
+                <ChevronRightIcon className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

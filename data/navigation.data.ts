@@ -5,7 +5,6 @@ import {
   CheckCircleIcon,
   EnvelopeIcon,
   ChartBarIcon,
-  Cog6ToothIcon,
   ArrowUpTrayIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
@@ -26,5 +25,4 @@ export const STATIC_NAV_ITEMS: Omit<NavItemDef, 'count'>[] = [
   { name: 'Meetings', href: '/meetings', icon: CalendarIcon },
   { name: 'Imports', href: '/imports', icon: ArrowUpTrayIcon },
   { name: 'Teams', href: '/teams', icon: UserGroupIcon },
-  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];

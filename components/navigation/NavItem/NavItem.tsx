@@ -7,6 +7,7 @@ interface NavItemProps {
   href: string;
   icon: ElementType;
   count?: number;
+  hasUnread?: boolean;
   isActive: boolean;
   isExpanded: boolean;
   onClick?: () => void;
@@ -16,7 +17,7 @@ export function NavItem({
   name,
   href,
   icon: Icon,
-  count,
+  hasUnread = false,
   isActive,
   isExpanded,
   onClick,
@@ -28,38 +29,41 @@ export function NavItem({
       href={href}
       onClick={onClick}
       title={!isExpanded ? name : undefined}
-      className={`relative w-full flex items-center rounded-lg text-sm font-medium transition-colors ${
+      className={`relative w-full flex items-center rounded-lg text-sm font-medium transition-all duration-150 ${
         isExpanded ? 'justify-between px-3.5 py-2.5' : 'justify-center p-2.5'
       } ${
         isActive
-          ? 'bg-primary text-white shadow-sm'
-          : `${theme.textMain} ${theme.hoverBg} hover:text-primary`
+          ? 'bg-primary/10 dark:bg-primary/15 text-primary'
+          : `${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] hover:text-[#1E293B] dark:hover:text-[#F3F4F6]`
       }`}
     >
+      {/* Active left-side accent bar */}
+      {isActive && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
+      )}
+
       {/* Icon + Label */}
-      <div className="flex items-center gap-3">
-        <Icon className="w-5 h-5 shrink-0" />
+      <div className="flex items-center gap-3 min-w-0">
+        <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-primary' : ''}`} />
         {isExpanded && (
           <span className="fira-sans-medium truncate">{name}</span>
         )}
       </div>
 
-      {/* Expanded badge */}
-      {isExpanded && count !== undefined && count > 0 && (
+      {/* Expanded blue dot indicator — shown only if unread */}
+      {isExpanded && hasUnread && (
         <span
-          className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-            isActive
-              ? 'bg-white/20 text-white'
-              : `${theme.bgSubtle} ${theme.textMuted}`
-          }`}
-        >
-          {count}
-        </span>
+          className="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/25 shrink-0 animate-pulse"
+          aria-label="New unread activity"
+        />
       )}
 
-      {/* Collapsed indicator dot */}
-      {!isExpanded && count !== undefined && count > 0 && (
-        <span className="absolute right-2 top-2 w-2 h-2 rounded-full bg-primary ring-2 ring-white dark:ring-zinc-900" />
+      {/* Collapsed blue dot indicator — shown only if unread */}
+      {!isExpanded && hasUnread && (
+        <span
+          className="absolute right-2 top-2 w-2 h-2 rounded-full bg-primary ring-2 ring-white dark:ring-[#18181C]"
+          aria-label="New unread activity"
+        />
       )}
     </Link>
   );

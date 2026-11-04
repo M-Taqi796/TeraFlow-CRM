@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import type { Task } from '@/types/task.types';
 import { Sidebar } from '../Sidebar';
 import { Header } from '../Header';
@@ -9,6 +10,7 @@ import { Taskbar } from '../Taskbar';
 import { Backdrop } from '../../ui/Backdrop';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useCRM } from '@/context/CRMContext';
+import { STATIC_NAV_ITEMS } from '@/data/navigation.data';
 import { NewPersonModal } from '@/components/people/NewPersonModal/NewPersonModal';
 
 interface AppShellProps {
@@ -18,6 +20,7 @@ interface AppShellProps {
   activeTasks?: Task[];
   completedTasks?: Task[];
   onCompleteTask?: (task: Task) => void;
+  unreadNav?: Record<string, boolean>;
   navCounts?: Record<string, number>;
   onLogout?: () => void;
 }
@@ -29,6 +32,7 @@ export function AppShell({
   activeTasks: propActiveTasks,
   completedTasks: propCompletedTasks,
   onCompleteTask: propOnCompleteTask,
+  unreadNav: propUnreadNav,
   navCounts: propNavCounts,
   onLogout: propOnLogout,
 }: AppShellProps) {
@@ -37,8 +41,24 @@ export function AppShell({
 
   const activeTasks    = propActiveTasks    ?? crm.activeTasks;
   const completedTasks = propCompletedTasks ?? crm.completedTasks;
+  const unreadNav      = propUnreadNav      ?? crm.unreadNav;
   const navCounts      = propNavCounts      ?? crm.navCounts;
   const onLogout       = propOnLogout       ?? crm.onLogout;
+  const pathname       = usePathname();
+
+  // Mark navigation tab as read as soon as the user visits it
+  useEffect(() => {
+    if (!pathname) return;
+    const match = STATIC_NAV_ITEMS.find(
+      (item) =>
+        pathname === item.href ||
+        (item.href !== '/dashboard' && pathname.startsWith(item.href))
+    );
+    if (match) {
+      crm.markNavAsRead(match.name);
+    }
+  }, [pathname, crm.markNavAsRead]);
+
   const handleTaskComplete = (task: Task) => {
     if (propOnCompleteTask) {
       propOnCompleteTask(task);
@@ -74,6 +94,7 @@ export function AppShell({
         onExpandedChange={setIsNavExpanded}
         isMobileOpen={isMobileNavOpen}
         onMobileClose={() => setIsMobileNavOpen(false)}
+        unreadNav={unreadNav}
         navCounts={navCounts}
         onLogout={onLogout}
       />

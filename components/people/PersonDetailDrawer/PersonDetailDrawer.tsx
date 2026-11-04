@@ -178,13 +178,15 @@ export function PersonDetailDrawer({
   const formatDateTimeDisplay = (isoString: string) => {
     try {
       const d = new Date(isoString);
-      return d.toLocaleString(undefined, {
+      if (isNaN(d.getTime())) return isoString;
+      return new Intl.DateTimeFormat('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
-        hour: '2-digit',
+        hour: 'numeric',
         minute: '2-digit',
-      });
+        hour12: true,
+      }).format(d);
     } catch {
       return isoString;
     }
@@ -1628,7 +1630,7 @@ export function PersonDetailDrawer({
                           <span className={`text-xs font-bold ${theme.textMain}`}>
                             {act.title}
                           </span>
-                          <span className={`text-[10px] ${theme.textSubtle}`}>
+                          <span suppressHydrationWarning className={`text-[10px] ${theme.textSubtle}`}>
                             {act.relativeTime || formatDateTimeDisplay(act.timestamp)}
                           </span>
                         </div>

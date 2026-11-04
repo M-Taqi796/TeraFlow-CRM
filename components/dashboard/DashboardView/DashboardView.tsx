@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { TimePeriod } from '@/types/metrics.types';
 import type { Meeting, MeetingStatus } from '@/types/meeting.types';
 import type { Task } from '@/types/task.types';
@@ -15,12 +15,16 @@ interface DashboardViewProps {
   meetings?: Meeting[];
   onStatusChange?: (id: string, status: MeetingStatus) => void;
   onCompleteTask?: (taskId: string, comment: string) => void;
+  initialGreeting?: string;
+  initialDateStr?: string;
 }
 
 export function DashboardView({
   meetings: propMeetings,
   onStatusChange: propOnStatusChange,
   onCompleteTask: propOnCompleteTask,
+  initialGreeting = 'Good morning',
+  initialDateStr = '',
 }: DashboardViewProps = {}) {
   const crm = useCRM();
 
@@ -36,6 +40,27 @@ export function DashboardView({
   const [meetingSearch, setMeetingSearch]   = useState('');
   const [statusFilter, setStatusFilter]     = useState<'All' | MeetingStatus>('All');
   const [taskToComplete, setTaskToComplete] = useState<Task | null>(null);
+
+  const [mounted, setMounted] = useState(false);
+  const [greeting, setGreeting] = useState('Good morning');
+  const [todayStr, setTodayStr] = useState('');
+
+  useEffect(() => {
+    const now = new Date();
+    const h = now.getHours();
+    if (h < 12) setGreeting('Good morning');
+    else if (h < 17) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+
+    setTodayStr(
+      new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      }).format(now)
+    );
+    setMounted(true);
+  }, []);
 
   const filteredMeetings = useMemo(() => {
     return meetings.filter((m) => {
@@ -61,6 +86,24 @@ export function DashboardView({
 
   return (
     <>
+      {/* Greeting row */}
+      <div className="flex flex-col gap-0.5 min-h-[46px] justify-center">
+        {mounted ? (
+          <div className="animate-in fade-in duration-150">
+            <p className="text-xs text-[#64748B] dark:text-[#9CA3AF] font-medium">
+              {todayStr}
+            </p>
+            <h1 className="text-xl font-bold text-[#1E293B] dark:text-[#F3F4F6] tracking-tight fira-sans-bold">
+              {greeting}, Muhammad.
+            </h1>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1.5 animate-pulse py-1">
+            <div className="h-3 w-36 bg-slate-200 dark:bg-zinc-800 rounded-sm" />
+            <div className="h-6 w-56 bg-slate-200 dark:bg-zinc-800 rounded-md" />
+          </div>
+        )}
+      </div>
       {/* Metric Cards Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <MetricCard

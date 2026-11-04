@@ -107,13 +107,15 @@ export function OutreachView() {
   const formatDateTime = (iso: string) => {
     try {
       const d = new Date(iso);
-      return d.toLocaleDateString(undefined, {
+      if (isNaN(d.getTime())) return iso;
+      return new Intl.DateTimeFormat('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
-        hour: '2-digit',
+        hour: 'numeric',
         minute: '2-digit',
-      });
+        hour12: true,
+      }).format(d);
     } catch {
       return iso;
     }
@@ -291,7 +293,7 @@ export function OutreachView() {
                     </td>
 
                     {/* Date & Time */}
-                    <td className={`py-3 px-4 whitespace-nowrap ${theme.textMuted}`}>
+                    <td suppressHydrationWarning className={`py-3 px-4 whitespace-nowrap ${theme.textMuted}`}>
                       {formatDateTime(log.timestamp)}
                     </td>
 

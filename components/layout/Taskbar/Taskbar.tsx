@@ -1,5 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  CheckCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import type { Task } from '@/types/task.types';
 import { TaskList } from '../../tasks/TaskList';
 import { TaskCompleteModal } from '../../tasks/TaskCompleteModal';
@@ -34,7 +39,7 @@ function TaskbarHeader({
   onMobileClose?: () => void;
   isMobile: boolean;
 }) {
-  const { theme } = useThemeContext();
+  const { theme, isDarkMode } = useThemeContext();
 
   if (isMobile) {
     return (
@@ -42,13 +47,15 @@ function TaskbarHeader({
         <div className="flex items-center gap-2">
           <CheckCircleIcon className="w-5 h-5 text-primary" />
           <h3 className={`text-sm font-bold ${theme.textMain} fira-sans-bold`}>Tasks</h3>
-          <span className="text-[11px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full ml-1">
-            {activeCount}
-          </span>
+          {activeCount > 0 && (
+            <span className="text-[11px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full ml-1 tabular-nums">
+              {activeCount}
+            </span>
+          )}
         </div>
         <button
           onClick={onMobileClose}
-          className={`p-1.5 ${theme.textMuted} hover:${theme.textMain} rounded-md`}
+          className={`p-1.5 ${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] rounded-md transition-colors`}
         >
           <XMarkIcon className="w-5 h-5" />
         </button>
@@ -58,18 +65,20 @@ function TaskbarHeader({
 
   if (isExpanded) {
     return (
-      <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between shrink-0 ${theme.bgPanel}`}>
+      <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-between shrink-0 ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'}`}>
         <div className="flex items-center gap-2">
           <CheckCircleIcon className="w-5 h-5 text-primary" />
           <h3 className={`text-sm font-bold ${theme.textMain} fira-sans-bold`}>Tasks</h3>
-          <span className="text-[11px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full ml-1">
-            {activeCount}
-          </span>
+          {activeCount > 0 && (
+            <span className="text-[11px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full ml-1 tabular-nums">
+              {activeCount}
+            </span>
+          )}
         </div>
         <button
           onClick={onCollapse}
-          title="Collapse taskbar"
-          className={`p-1.5 ${theme.textMuted} hover:${theme.textMain} ${theme.hoverBg} rounded-lg transition-colors`}
+          title="Collapse tasks panel"
+          className={`p-1.5 ${theme.textMuted} hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] rounded-lg transition-colors`}
         >
           <ChevronRightIcon className="w-4 h-4" />
         </button>
@@ -78,11 +87,11 @@ function TaskbarHeader({
   }
 
   return (
-    <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-center shrink-0 ${theme.bgPanel}`}>
+    <div className={`h-16 px-3 border-b ${theme.border} flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-[#18181C]' : 'bg-[#FFFFFF]'}`}>
       <button
         onClick={onExpand}
-        title="Expand taskbar"
-        className={`p-1.5 text-primary ${theme.hoverBg} rounded-lg transition-colors`}
+        title="Expand tasks panel"
+        className="p-1.5 text-primary hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] rounded-lg transition-colors"
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
@@ -90,21 +99,42 @@ function TaskbarHeader({
   );
 }
 
-function MinimizedRail({ activeCount, onExpand, theme }: { activeCount: number; onExpand: () => void; theme: ReturnType<typeof useThemeContext>['theme'] }) {
+function MinimizedRail({
+  activeCount,
+  onExpand,
+  theme,
+}: {
+  activeCount: number;
+  onExpand: () => void;
+  theme: ReturnType<typeof useThemeContext>['theme'];
+}) {
   return (
-    <div className="flex-1 flex flex-col items-center py-4 space-y-4">
-      <div
+    <div className="flex-1 flex flex-col items-center pt-4 gap-3">
+      <button
         onClick={onExpand}
-        className={`cursor-pointer flex flex-col items-center gap-1 p-2 rounded-lg ${theme.hoverBg} transition-colors`}
-        title="Click to expand tasks"
+        title="Expand tasks panel"
+        className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] transition-colors group"
       >
         <CheckCircleIcon className="w-5 h-5 text-primary" />
-        <span className="text-[10px] font-bold bg-primary text-white rounded-full px-1.5 py-0.5">
-          {activeCount}
-        </span>
+        {activeCount > 0 && (
+          <span className="text-[10px] font-bold bg-primary text-white rounded-full px-1.5 py-0.5 tabular-nums">
+            {activeCount}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function TaskbarEmptyState({ theme }: { theme: ReturnType<typeof useThemeContext>['theme'] }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center gap-3">
+      <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+        <CheckCircleIcon className="w-6 h-6 text-emerald-500" />
       </div>
-      <div className={`text-[11px] font-semibold ${theme.textSubtle} rotate-90 whitespace-nowrap mt-6`}>
-        Tasks
+      <div>
+        <p className={`text-sm font-semibold ${theme.textMain}`}>All caught up!</p>
+        <p className={`text-xs ${theme.textMuted} mt-1`}>No pending tasks right now.</p>
       </div>
     </div>
   );
@@ -145,12 +175,16 @@ export function Taskbar({
   };
 
   const taskListContent: ReactNode = (
-    <TaskList
-      activeTasks={activeTasks}
-      completedTasks={completedTasks}
-      onCompleteTask={handleRequestComplete}
-      onUncompleteTask={handleUncomplete}
-    />
+    activeTasks.length === 0 && completedTasks.length === 0 ? (
+      <TaskbarEmptyState theme={theme} />
+    ) : (
+      <TaskList
+        activeTasks={activeTasks}
+        completedTasks={completedTasks}
+        onCompleteTask={handleRequestComplete}
+        onUncompleteTask={handleUncomplete}
+      />
+    )
   );
 
   return (
@@ -196,7 +230,7 @@ export function Taskbar({
         <div className="flex-1 overflow-y-auto p-4">{taskListContent}</div>
       </aside>
 
-      {/* Task Complete Modal asking for optional comment */}
+      {/* Task Complete Modal */}
       {taskToComplete && (
         <TaskCompleteModal
           task={taskToComplete}

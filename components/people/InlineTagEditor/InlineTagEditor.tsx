@@ -73,7 +73,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className={`p-0.5 rounded ${theme.textMuted} hover:${theme.textMain}`}
+              className={`p-0.5 rounded ${theme.textMuted} hover:text-[#1E293B] dark:hover:text-[#F3F4F6] transition-colors`}
             >
               <XMarkIcon className="w-3.5 h-3.5" />
             </button>
@@ -101,7 +101,7 @@ export function InlineTagEditor({ existingTags, onAddTag }: InlineTagEditorProps
                   key={tag}
                   type="button"
                   onClick={() => handleSelectTag(tag)}
-                  className={`w-full text-left text-xs px-2 py-1 rounded-md ${theme.hoverBg} ${theme.textMain} flex items-center justify-between transition-colors cursor-pointer`}
+                  className={`w-full text-left text-xs px-2 py-1 rounded-md hover:bg-[#F1F5F9] dark:hover:bg-[#25252D] ${theme.textMain} flex items-center justify-between transition-colors cursor-pointer`}
                 >
                   <span>{tag.replace(/^#/, '')}</span>
                   <PlusIcon className="w-3 h-3 text-primary opacity-60" />

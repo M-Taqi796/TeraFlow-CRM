@@ -1,14 +1,35 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import type { Person, PersonStage } from '@/types/person.types';
 import type { Meeting, MeetingStatus } from '@/types/meeting.types';
 import type { Task } from '@/types/task.types';
 import { SEED_PEOPLE } from '@/data/people.data';
 import { SEED_MEETINGS } from '@/data/meetings.data';
 import { SEED_TASKS } from '@/data/tasks.data';
+import { ToastContainer } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 
 import { COMMON_TAGS, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
+
+/** Current authenticated user — update when auth is wired up. */
+export const CURRENT_USER = {
+  name: 'Muhammad Taqi',
+  role: 'ADMIN',
+  imageUrl: undefined as string | undefined,
+};
+
+const DEFAULT_UNREAD_NAV: Record<string, boolean> = {
+  Meetings: false,
+  Tasks: false,
+  People: false,
+  'Call Log': false,
+  'Email Outreach': false,
+  Imports: false,
+  Teams: false,
+  Settings: false,
+  Dashboard: false,
+};
 
 interface CRMContextType {
   people: Person[];
@@ -17,6 +38,9 @@ interface CRMContextType {
   activeTasks: Task[];
   completedTasks: Task[];
   navCounts: Record<string, number>;
+  unreadNav: Record<string, boolean>;
+  markNavAsRead: (navName: string) => void;
+  markNavAsUnread: (navName: string) => void;
   allTags: string[];
   onAddGlobalTag: (tag: string) => void;
   customNiches: string[];
@@ -84,11 +108,19 @@ interface CRMContextType {
   ) => void;
   onDeleteEmailLog: (activityId: string) => void;
   onLogout: () => void;
+  /** Toast helpers — call from anywhere inside CRMProvider */
+  toast: {
+    success: (msg: string) => void;
+    error:   (msg: string) => void;
+    info:    (msg: string) => void;
+    warning: (msg: string) => void;
+  };
 }
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export function CRMProvider({ children }: { children: React.ReactNode }) {
+  const { toasts, dismiss, success: toastSuccess, error: toastError, info: toastInfo, warning: toastWarning } = useToast();
   const [people, setPeople]     = useState<Person[]>(SEED_PEOPLE);
   const [meetings, setMeetings] = useState<Meeting[]>(SEED_MEETINGS);
   const [tasks, setTasks]       = useState<Task[]>(SEED_TASKS);
@@ -149,6 +181,43 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     };
   }, [people, activeTasks.length, meetings]);
 
+  // ── Unread Navigation State (Blue Dot Indicator) ──
+  const [unreadNav, setUnreadNav] = useState<Record<string, boolean>>(DEFAULT_UNREAD_NAV);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = localStorage.getItem('teraflow_unread_nav');
+      if (saved) {
+        setUnreadNav((prev) => ({ ...prev, ...JSON.parse(saved) }));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const markNavAsRead = useCallback((navName: string) => {
+    setUnreadNav((prev) => {
+      if (!prev[navName]) return prev;
+      const next = { ...prev, [navName]: false };
+      try {
+        localStorage.setItem('teraflow_unread_nav', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const markNavAsUnread = useCallback((navName: string) => {
+    setUnreadNav((prev) => {
+      if (prev[navName]) return prev;
+      const next = { ...prev, [navName]: true };
+      try {
+        localStorage.setItem('teraflow_unread_nav', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
   const handlePersonStageChange = (id: string, stage: PersonStage) => {
     setPeople((prev) =>
       prev.map((p) => {
@@ -179,11 +248,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     setPeople((prev) => [newPerson, ...prev]);
     // Also register any new tags
     newPerson.tags.forEach(handleAddGlobalTag);
+    markNavAsUnread('People');
   };
 
   const handleBulkCreatePeople = (newPeople: Person[]) => {
     setPeople((prev) => [...newPeople, ...prev]);
     newPeople.forEach((p) => p.tags.forEach(handleAddGlobalTag));
+    markNavAsUnread('People');
   };
 
   const handleDeletePerson = (id: string) => {
@@ -252,6 +323,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       id: `m-${Date.now()}`,
     };
     setMeetings((prev) => [newMeeting, ...prev]);
+    markNavAsUnread('Meetings');
   };
 
   const handleEditMeeting = (id: string, updated: Partial<Meeting>) => {
@@ -295,6 +367,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       status: taskData.status || 'TODO',
     };
     setTasks((prev) => [newTask, ...prev]);
+    markNavAsUnread('Tasks');
   };
 
   const handleEditTask = (id: string, updated: Partial<Task>) => {
@@ -333,7 +406,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const actId = `act-${Date.now()}`;
     const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
-    const formattedDate = targetDate.toLocaleDateString(undefined, {
+    const formattedDate = targetDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -408,6 +481,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       };
       return [newPerson, ...prev];
     });
+    markNavAsUnread('Call Log');
   };
 
   const handleEditCallLog = (
@@ -479,7 +553,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const actId = `act-${Date.now()}`;
     const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
-    const formattedDate = targetDate.toLocaleDateString(undefined, {
+    const formattedDate = targetDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -555,6 +629,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       };
       return [newPerson, ...prev];
     });
+    markNavAsUnread('Email Outreach');
   };
 
   const handleEditEmailLog = (
@@ -616,7 +691,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = () => {
-    alert('Logged out successfully.');
+    // Replace with router.push('/login') once auth is wired
+    window.location.href = '/login';
   };
 
   return (
@@ -628,6 +704,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         activeTasks,
         completedTasks,
         navCounts,
+        unreadNav,
+        markNavAsRead,
+        markNavAsUnread,
         allTags,
         onAddGlobalTag: handleAddGlobalTag,
         customNiches,
@@ -661,9 +740,16 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         onEditEmailLog: handleEditEmailLog,
         onDeleteEmailLog: handleDeleteEmailLog,
         onLogout: handleLogout,
+        toast: {
+          success: toastSuccess,
+          error:   toastError,
+          info:    toastInfo,
+          warning: toastWarning,
+        },
       }}
     >
       {children}
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </CRMContext.Provider>
   );
 }

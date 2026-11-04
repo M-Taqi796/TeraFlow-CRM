@@ -81,6 +81,13 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Unified keyboard focus ring — accessible & minimal */
+:focus-visible {
+  outline: 2px solid rgba(0, 125, 220, 0.5);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* Fira Sans Typography Classes */
 .fira-sans-thin { font-family: "Fira Sans", sans-serif; font-weight: 100; font-style: normal; }
 .fira-sans-extralight { font-family: "Fira Sans", sans-serif; font-weight: 200; font-style: normal; }
