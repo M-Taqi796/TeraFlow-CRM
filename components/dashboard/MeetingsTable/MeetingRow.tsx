@@ -50,7 +50,7 @@ export function MeetingRow({ meeting: m, onStatusChange }: MeetingRowProps) {
           value={m.status}
           onChange={(e) => onStatusChange(m.id, e.target.value as MeetingStatus)}
           aria-label={`Status for ${m.businessName}`}
-          className={`text-xs py-0.5 px-1 bg-transparent border-none focus:outline-none cursor-pointer ${getStatusTextColor(m.status)}`}
+          className={`text-xs py-0.5 bg-transparent border-none focus:outline-none cursor-pointer select-clean ${getStatusTextColor(m.status)}`}
         >
           {STATUS_OPTIONS.map((st) => (
             <option

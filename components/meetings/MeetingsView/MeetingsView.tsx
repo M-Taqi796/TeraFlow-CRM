@@ -318,7 +318,7 @@ export function MeetingsView() {
                         <select
                           value={m.status}
                           onChange={(e) => onEditMeeting(m.id, { status: e.target.value as MeetingStatus })}
-                          className={`text-xs py-0.5 px-1 bg-transparent border-none focus:outline-none cursor-pointer ${getStatusTextColor(m.status)}`}
+                          className={`text-xs py-0.5 bg-transparent border-none focus:outline-none cursor-pointer select-clean ${getStatusTextColor(m.status)}`}
                         >
                           {STATUS_OPTIONS.map((st) => (
                             <option

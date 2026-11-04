@@ -751,7 +751,7 @@ export function PersonDetailDrawer({
               value={person.stage}
               onChange={(e) => handleStageChange(e.target.value as PersonStage)}
               aria-label={`Stage for ${person.businessName}`}
-              className={`text-xs py-1 px-1.5 bg-transparent border-none cursor-pointer focus:outline-none ${getStageTextColor(
+              className={`text-xs py-1 bg-transparent border-none cursor-pointer focus:outline-none select-clean ${getStageTextColor(
                 person.stage
               )}`}
             >
@@ -820,7 +820,7 @@ export function PersonDetailDrawer({
                     <select
                       value={newFieldType}
                       onChange={(e) => setNewFieldType(e.target.value as ContactFieldType)}
-                      className={`text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                      className={`text-xs pl-2.5 pr-7 py-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} select-compact`}
                     >
                       <option value="phone">Phone Number</option>
                       <option value="email">Email Address</option>
@@ -1200,7 +1200,7 @@ export function PersonDetailDrawer({
                             setEditNiche(e.target.value);
                           }
                         }}
-                        className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        className={`w-full text-xs pl-2.5 pr-7 py-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} select-compact`}
                       >
                         {combinedNiches.map((n) => (
                           <option key={n} value={n}>
@@ -1242,7 +1242,7 @@ export function PersonDetailDrawer({
                             setEditCity(e.target.value);
                           }
                         }}
-                        className={`w-full text-xs p-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        className={`w-full text-xs pl-2.5 pr-7 py-1.5 rounded-md border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} select-compact`}
                       >
                         {combinedCities.map((c) => (
                           <option key={c} value={c}>
@@ -1400,7 +1400,7 @@ export function PersonDetailDrawer({
                       <select
                         value={callStatus}
                         onChange={(e) => setCallStatus(e.target.value as any)}
-                        className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain}`}
+                        className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
                       >
                         <option>Answered</option>
                         <option>Not answered</option>

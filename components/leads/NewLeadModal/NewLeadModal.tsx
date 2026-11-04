@@ -216,7 +216,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value as LeadStage)}
-                className={inputClass()}
+                className={`pl-3 pr-8 ${inputClass()}`}
               >
                 {LEAD_STAGES.map((s) => (
                   <option key={s} value={s} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
@@ -233,7 +233,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as LeadPriority)}
-                className={inputClass()}
+                className={`pl-3 pr-8 ${inputClass()}`}
               >
                 {LEAD_PRIORITIES.map((p) => (
                   <option key={p} value={p} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">
@@ -250,7 +250,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value as LeadSource)}
-                className={inputClass()}
+                className={`pl-3 pr-8 ${inputClass()}`}
               >
                 {LEAD_SOURCES.map((src) => (
                   <option key={src} value={src} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">

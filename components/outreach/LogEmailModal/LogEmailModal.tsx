@@ -300,7 +300,7 @@ export function LogEmailModal({ isOpen, onClose, initialLog }: LogEmailModalProp
               <select
                 value={emailType}
                 onChange={(e) => setEmailType(e.target.value as EmailTypeOption)}
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
               >
                 {EMAIL_TYPE_OPTIONS.map((t) => (
                   <option key={t} value={t}>

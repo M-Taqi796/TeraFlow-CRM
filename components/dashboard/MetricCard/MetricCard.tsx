@@ -38,7 +38,7 @@ export function MetricCard({
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as TimePeriod)}
           aria-label={ariaLabel}
-          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md px-2 py-1 focus:outline-none focus:border-primary cursor-pointer transition-colors`}
+          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md pl-2.5 pr-7 py-1 focus:outline-none focus:border-primary cursor-pointer transition-colors select-compact`}
         >
           {TIME_PERIODS.map((p) => (
             <option

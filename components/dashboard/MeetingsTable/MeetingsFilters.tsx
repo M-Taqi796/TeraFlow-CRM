@@ -46,7 +46,7 @@ export function MeetingsFilters({
           value={statusFilter}
           onChange={(e) => onStatusFilterChange(e.target.value as 'All' | MeetingStatus)}
           aria-label="Filter meetings by status"
-          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none pr-1 cursor-pointer`}
+          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none pl-1 pr-7 cursor-pointer select-compact`}
         >
           <option
             value="All"

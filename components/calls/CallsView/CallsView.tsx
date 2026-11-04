@@ -188,7 +188,7 @@ export function CallsView() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
+            className={`pl-3 pr-8 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer select-compact`}
           >
             <option value="All">Status: All</option>
             {CALL_STATUS_OPTIONS.map((st) => (
@@ -202,7 +202,7 @@ export function CallsView() {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as 'desc' | 'asc')}
-            className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
+            className={`pl-3 pr-8 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer select-compact`}
           >
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>

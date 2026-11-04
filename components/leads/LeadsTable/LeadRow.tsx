@@ -84,7 +84,7 @@ export function LeadRow({ lead: l, onStageChange, onRowClick }: LeadRowProps) {
           value={l.stage}
           onChange={(e) => onStageChange(l.id, e.target.value as LeadStage)}
           aria-label={`Stage for ${l.businessName}`}
-          className={`text-xs py-0.5 px-0 bg-transparent border-none focus:outline-none cursor-pointer ${STAGE_TEXT_COLORS[l.stage]}`}
+          className={`text-xs py-0.5 bg-transparent border-none focus:outline-none cursor-pointer select-clean ${STAGE_TEXT_COLORS[l.stage]}`}
         >
           {LEAD_STAGES.map((s) => (
             <option

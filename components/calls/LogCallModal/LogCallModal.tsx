@@ -290,7 +290,7 @@ export function LogCallModal({ isOpen, onClose, initialLog }: LogCallModalProps)
               <select
                 value={callStatus}
                 onChange={(e) => setCallStatus(e.target.value as CallStatusOption)}
-                className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
               >
                 {CALL_STATUS_OPTIONS.map((st) => (
                   <option key={st} value={st}>

@@ -178,7 +178,7 @@ export function OutreachView() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
+            className={`pl-3 pr-8 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer select-compact`}
           >
             <option value="All">Type: All</option>
             {EMAIL_TYPE_OPTIONS.map((t) => (
@@ -192,7 +192,7 @@ export function OutreachView() {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as 'desc' | 'asc')}
-            className={`px-3 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer`}
+            className={`pl-3 pr-8 py-1.5 rounded-lg border ${theme.border} ${theme.bgPanel} ${theme.textMain} text-xs focus:outline-none focus:border-primary cursor-pointer select-compact`}
           >
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>

@@ -188,7 +188,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                 value={draft.stage}
                 onChange={(e) => setDraft({ ...draft, stage: e.target.value as LeadStage })}
                 aria-label="Lead stage"
-                className={`text-xs font-semibold px-2.5 py-1 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${isDarkMode ? stageColors.dark : stageColors.light}`}
+                className={`text-xs font-semibold pl-2.5 pr-7 py-1 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 select-compact ${isDarkMode ? stageColors.dark : stageColors.light}`}
               >
                 {LEAD_STAGES.map((s) => (
                   <option
@@ -211,7 +211,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                 value={draft.priority}
                 onChange={(e) => setDraft({ ...draft, priority: e.target.value as LeadPriority })}
                 aria-label="Lead priority"
-                className={`text-xs font-semibold px-2.5 py-1 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 ${theme.inputBg} ${theme.inputBorder} ${theme.textMain}`}
+                className={`text-xs font-semibold pl-2.5 pr-7 py-1 rounded-md border cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40 select-compact ${theme.inputBg} ${theme.inputBorder} ${theme.textMain}`}
               >
                 {LEAD_PRIORITIES.map((p) => (
                   <option key={p} value={p} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6] font-normal">
@@ -287,7 +287,7 @@ export function LeadDetailModal({ lead, onClose, onSave }: LeadDetailModalProps)
                   <select
                     value={draft.source}
                     onChange={(e) => setDraft({ ...draft, source: e.target.value as LeadSource })}
-                    className={inputClass}
+                    className={`pl-3 pr-8 ${inputClass}`}
                   >
                     {LEAD_SOURCES.map((s) => (
                       <option key={s} value={s} className="bg-white dark:bg-[#18181C] text-[#1E293B] dark:text-[#F3F4F6]">

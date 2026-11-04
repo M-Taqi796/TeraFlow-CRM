@@ -33,7 +33,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as TimePeriod)}
           aria-label="Conversion chart time period"
-          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md px-2 py-1 focus:outline-none cursor-pointer`}
+          className={`text-xs font-medium ${theme.textMain} ${theme.bgSubtle} border ${theme.border} rounded-md pl-2.5 pr-7 py-1 focus:outline-none cursor-pointer select-compact`}
         >
           {TIME_PERIODS.map((p) => (
             <option

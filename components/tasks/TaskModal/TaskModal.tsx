@@ -133,7 +133,7 @@ export function TaskModal({ isOpen, onClose, initialTask }: TaskModalProps) {
             <select
               value={assignedTo}
               onChange={(e) => setAssignedTo(e.target.value)}
-              className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none cursor-pointer`}
+              className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none cursor-pointer`}
             >
               {TEAM_MEMBERS.map((tm) => (
                 <option key={tm.id} value={tm.name}>

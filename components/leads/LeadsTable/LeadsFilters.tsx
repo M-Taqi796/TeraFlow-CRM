@@ -53,7 +53,7 @@ export function LeadsFilters({
           value={stageFilter}
           onChange={(e) => onStageFilterChange(e.target.value as 'All' | LeadStage)}
           aria-label="Filter leads by stage"
-          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none pr-1 cursor-pointer`}
+          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none pl-1 pr-7 cursor-pointer select-compact`}
         >
           <option
             value="All"
@@ -79,7 +79,7 @@ export function LeadsFilters({
           value={priorityFilter}
           onChange={(e) => onPriorityFilterChange(e.target.value as 'All' | LeadPriority)}
           aria-label="Filter leads by priority"
-          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none px-1 cursor-pointer`}
+          className={`bg-transparent text-xs ${theme.textMain} font-medium focus:outline-none pl-1 pr-7 cursor-pointer select-compact`}
         >
           <option
             value="All"

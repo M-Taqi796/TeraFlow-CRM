@@ -342,7 +342,7 @@ export function PeopleTable({
                         value={person.stage}
                         onChange={(e) => onStageChange(person.id, e.target.value as PersonStage)}
                         aria-label={`Stage for ${person.businessName}`}
-                        className={`text-xs py-0.5 px-0 bg-transparent border-none focus:outline-none cursor-pointer ${getStageTextColor(person.stage)}`}
+                        className={`text-xs py-0.5 bg-transparent border-none focus:outline-none cursor-pointer select-clean ${getStageTextColor(person.stage)}`}
                       >
                         {PERSON_STAGES.map((stg) => (
                           <option

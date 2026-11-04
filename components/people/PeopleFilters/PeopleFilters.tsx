@@ -97,7 +97,7 @@ export function PeopleFilters({
           <select
             value={stageFilter}
             onChange={(e) => onStageFilterChange(e.target.value as 'All' | PersonStage)}
-            className={`px-2.5 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors focus:outline-none focus:border-primary ${
+            className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs cursor-pointer select-compact transition-colors focus:outline-none focus:border-primary ${
               stageFilter !== 'All'
                 ? 'border-primary/40 text-primary bg-primary/5 dark:bg-primary/10'
                 : `${theme.border} ${theme.bgPanel} ${theme.textMuted}`
@@ -119,7 +119,7 @@ export function PeopleFilters({
           <select
             value={selectedNiche}
             onChange={(e) => onSelectedNicheChange(e.target.value)}
-            className={`px-2.5 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors focus:outline-none focus:border-primary ${
+            className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs cursor-pointer select-compact transition-colors focus:outline-none focus:border-primary ${
               selectedNiche
                 ? 'border-primary/40 text-primary bg-primary/5 dark:bg-primary/10'
                 : `${theme.border} ${theme.bgPanel} ${theme.textMuted}`
@@ -141,7 +141,7 @@ export function PeopleFilters({
           <select
             value={selectedCity}
             onChange={(e) => onSelectedCityChange(e.target.value)}
-            className={`px-2.5 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors focus:outline-none focus:border-primary ${
+            className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs cursor-pointer select-compact transition-colors focus:outline-none focus:border-primary ${
               selectedCity
                 ? 'border-primary/40 text-primary bg-primary/5 dark:bg-primary/10'
                 : `${theme.border} ${theme.bgPanel} ${theme.textMuted}`
@@ -163,7 +163,7 @@ export function PeopleFilters({
           <select
             value={selectedTag}
             onChange={(e) => onSelectedTagChange(e.target.value)}
-            className={`px-2.5 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors focus:outline-none focus:border-primary ${
+            className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs cursor-pointer select-compact transition-colors focus:outline-none focus:border-primary ${
               selectedTag
                 ? 'border-primary/40 text-primary bg-primary/5 dark:bg-primary/10'
                 : `${theme.border} ${theme.bgPanel} ${theme.textMuted}`

@@ -452,7 +452,7 @@ export function ImportsView() {
                         setImportNiche(e.target.value);
                       }
                     }}
-                    className={`w-full text-xs p-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                    className={`w-full text-xs pl-3 pr-8 py-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                   >
                     {combinedNiches.map((n) => (
                       <option key={n} value={n}>
@@ -497,7 +497,7 @@ export function ImportsView() {
                         setImportCity(e.target.value);
                       }
                     }}
-                    className={`w-full text-xs p-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                    className={`w-full text-xs pl-3 pr-8 py-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                   >
                     {combinedCities.map((c) => (
                       <option key={c} value={c}>
@@ -535,7 +535,7 @@ export function ImportsView() {
                 <select
                   value={importStage}
                   onChange={(e) => setImportStage(e.target.value as PersonStage)}
-                  className={`w-full text-xs p-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
+                  className={`w-full text-xs pl-3 pr-8 py-2.5 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} focus:outline-none focus:border-primary cursor-pointer`}
                 >
                   {PERSON_STAGES.map((stg) => (
                     <option key={stg} value={stg}>
@@ -842,7 +842,7 @@ export function ImportsView() {
                         prev.map((f) => (f.id === field.id ? { ...f, type: newType } : f))
                       );
                     }}
-                    className={`w-32 text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
+                    className={`w-32 text-xs pl-2.5 pr-7 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer select-compact`}
                   >
                     <option value="website">Website</option>
                     <option value="linkedin">LinkedIn</option>
@@ -881,7 +881,7 @@ export function ImportsView() {
                 <select
                   value={manualNiche}
                   onChange={(e) => setManualNiche(e.target.value)}
-                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
+                  className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
                 >
                   {combinedNiches.map((n) => (
                     <option key={n} value={n}>
@@ -896,7 +896,7 @@ export function ImportsView() {
                 <select
                   value={manualCity}
                   onChange={(e) => setManualCity(e.target.value)}
-                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
+                  className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
                 >
                   {combinedCities.map((c) => (
                     <option key={c} value={c}>
@@ -911,7 +911,7 @@ export function ImportsView() {
                 <select
                   value={manualStage}
                   onChange={(e) => setManualStage(e.target.value as PersonStage)}
-                  className={`w-full text-xs p-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
+                  className={`w-full text-xs pl-3 pr-8 py-2 rounded-lg border ${theme.inputBorder} ${theme.inputBg} ${theme.textMain} cursor-pointer`}
                 >
                   {PERSON_STAGES.map((stg) => (
                     <option key={stg} value={stg}>
