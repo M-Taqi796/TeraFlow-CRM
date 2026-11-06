@@ -13,6 +13,29 @@ import { useToast } from '@/hooks/useToast';
 import { COMMON_TAGS, DEFAULT_NICHES, DEFAULT_CITIES } from '@/types/person.types';
 import type { UserProfile, UserRole } from '@/types/user.types';
 import { INITIAL_CURRENT_USER, SEED_TEAM_MEMBERS } from '@/types/user.types';
+import {
+  fetchPeopleFromDB,
+  fetchMeetingsFromDB,
+  fetchTasksFromDB,
+  fetchCatalogsFromDB,
+  createPersonInDB,
+  updatePersonInDB,
+  updatePersonStageInDB,
+  deletePersonInDB,
+  bulkUpdateStageInDB,
+  bulkDeleteInDB,
+  createMeetingInDB,
+  updateMeetingInDB,
+  deleteMeetingInDB,
+  createTaskInDB,
+  updateTaskInDB,
+  completeTaskInDB,
+  deleteTaskInDB,
+  addCallLogInDB,
+  addEmailLogInDB,
+  addCatalogItemInDB,
+  subscribeToRealtimeChanges,
+} from '@/lib/services/crmService';
 
 /** Current authenticated user — update when auth is wired up. */
 export const CURRENT_USER = {
@@ -152,6 +175,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     const clean = tag.trim().replace(/^#/, '');
     if (!clean) return;
     setAllTags((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+    addCatalogItemInDB('tag', clean);
   };
 
   // Custom niches and cities
@@ -162,13 +186,80 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     const clean = niche.trim();
     if (!clean) return;
     setCustomNiches((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+    addCatalogItemInDB('niche', clean);
   };
 
   const handleAddCustomCity = (city: string) => {
     const clean = city.trim();
     if (!clean) return;
     setCustomCities((prev) => (prev.includes(clean) ? prev : [...prev, clean]));
+    addCatalogItemInDB('city', clean);
   };
+
+  // ── Database Data Ingestion & Live Realtime Sync ──
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDataFromSupabase() {
+      try {
+        const [dbPeople, dbMeetings, dbTasks, dbCatalogs] = await Promise.all([
+          fetchPeopleFromDB(),
+          fetchMeetingsFromDB(),
+          fetchTasksFromDB(),
+          fetchCatalogsFromDB(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (dbPeople && dbPeople.length > 0) {
+          setPeople(dbPeople);
+        }
+        if (dbMeetings && dbMeetings.length > 0) {
+          setMeetings(dbMeetings);
+        }
+        if (dbTasks && dbTasks.length > 0) {
+          setTasks(dbTasks);
+        }
+        if (dbCatalogs.globalTags && dbCatalogs.globalTags.length > 0) {
+          setAllTags(Array.from(new Set([...COMMON_TAGS, ...dbCatalogs.globalTags])));
+        }
+        if (dbCatalogs.customNiches && dbCatalogs.customNiches.length > 0) {
+          setCustomNiches(dbCatalogs.customNiches);
+        }
+        if (dbCatalogs.customCities && dbCatalogs.customCities.length > 0) {
+          setCustomCities(dbCatalogs.customCities);
+        }
+      } catch (err) {
+        console.error('Supabase DB initial load error:', err);
+      }
+    }
+
+    loadDataFromSupabase();
+
+    const unsubscribe = subscribeToRealtimeChanges({
+      onContactsChange: async () => {
+        const fresh = await fetchPeopleFromDB();
+        if (fresh && fresh.length > 0 && isMounted) setPeople(fresh);
+      },
+      onMeetingsChange: async () => {
+        const fresh = await fetchMeetingsFromDB();
+        if (fresh && fresh.length > 0 && isMounted) setMeetings(fresh);
+      },
+      onTasksChange: async () => {
+        const fresh = await fetchTasksFromDB();
+        if (fresh && fresh.length > 0 && isMounted) setTasks(fresh);
+      },
+      onActivitiesChange: async () => {
+        const fresh = await fetchPeopleFromDB();
+        if (fresh && fresh.length > 0 && isMounted) setPeople(fresh);
+      },
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const activeTasks    = useMemo(() => tasks.filter((t) => t.status === 'TODO'), [tasks]);
   const completedTasks = useMemo(() => tasks.filter((t) => t.status === 'COMPLETED'), [tasks]);
@@ -329,6 +420,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser.role, toastError, toastInfo]);
 
   const handlePersonStageChange = (id: string, stage: PersonStage) => {
+    updatePersonStageInDB(id, stage);
     setPeople((prev) =>
       prev.map((p) => {
         if (p.id !== id) return p;
@@ -351,11 +443,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleUpdatePerson = (updated: Person) => {
+    updatePersonInDB(updated);
     setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
 
-  const handleCreatePerson = (newPerson: Person) => {
-    setPeople((prev) => [newPerson, ...prev]);
+  const handleCreatePerson = async (newPerson: Person) => {
+    const dbId = await createPersonInDB(newPerson);
+    const personToAdd = dbId ? { ...newPerson, id: dbId } : newPerson;
+    setPeople((prev) => [personToAdd, ...prev]);
     // Also register any new tags
     newPerson.tags.forEach(handleAddGlobalTag);
     markNavAsUnread('People');
@@ -363,11 +458,15 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
   const handleBulkCreatePeople = (newPeople: Person[]) => {
     setPeople((prev) => [...newPeople, ...prev]);
-    newPeople.forEach((p) => p.tags.forEach(handleAddGlobalTag));
+    newPeople.forEach(async (p) => {
+      await createPersonInDB(p);
+      p.tags.forEach(handleAddGlobalTag);
+    });
     markNavAsUnread('People');
   };
 
   const handleDeletePerson = (id: string) => {
+    deletePersonInDB(id);
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -398,6 +497,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleBulkStage = (ids: string[], stage: PersonStage) => {
+    bulkUpdateStageInDB(ids, stage);
     setPeople((prev) =>
       prev.map((p) => {
         if (!ids.includes(p.id)) return p;
@@ -420,33 +520,39 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleBulkDelete = (ids: string[]) => {
+    bulkDeleteInDB(ids);
     setPeople((prev) => prev.filter((p) => !ids.includes(p.id)));
   };
 
   const handleMeetingStatusChange = (id: string, status: MeetingStatus) => {
+    updateMeetingInDB(id, { status });
     setMeetings((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
   };
 
-  const handleAddMeeting = (meeting: Omit<Meeting, 'id'>) => {
+  const handleAddMeeting = async (meeting: Omit<Meeting, 'id'>) => {
+    const dbId = await createMeetingInDB(meeting);
     const newMeeting: Meeting = {
       ...meeting,
-      id: `m-${Date.now()}`,
+      id: dbId || `m-${Date.now()}`,
     };
     setMeetings((prev) => [newMeeting, ...prev]);
     markNavAsUnread('Meetings');
   };
 
   const handleEditMeeting = (id: string, updated: Partial<Meeting>) => {
+    updateMeetingInDB(id, updated);
     setMeetings((prev) =>
       prev.map((m) => (m.id === id ? { ...m, ...updated } : m))
     );
   };
 
   const handleDeleteMeeting = (id: string) => {
+    deleteMeetingInDB(id);
     setMeetings((prev) => prev.filter((m) => m.id !== id));
   };
 
   const handleCompleteTask = (taskId: string, comment: string) => {
+    completeTaskInDB(taskId, comment);
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -456,7 +562,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const handleAddTask = (taskData: Omit<Task, 'id'> | {
+  const handleAddTask = async (taskData: Omit<Task, 'id'> | {
     title: string;
     assignedBy?: string;
     assignedTo?: string;
@@ -466,8 +572,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     status?: 'TODO' | 'COMPLETED';
   }) => {
     const todayStr = new Date().toISOString().slice(0, 10);
+    const dbId = await createTaskInDB(taskData);
     const newTask: Task = {
-      id: `t-${Date.now()}`,
+      id: dbId || `t-${Date.now()}`,
       title: taskData.title.trim(),
       assignedBy: taskData.assignedBy?.trim() || 'Muhammad Taqi',
       assignedTo: taskData.assignedTo?.trim() || 'Muhammad Taqi',
@@ -481,12 +588,14 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleEditTask = (id: string, updated: Partial<Task>) => {
+    updateTaskInDB(id, updated);
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...updated } : t))
     );
   };
 
   const handleDeleteTask = (id: string) => {
+    deleteTaskInDB(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
@@ -495,6 +604,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       prev.map((t) => {
         if (t.id !== id) return t;
         const newStatus = t.status === 'TODO' ? 'COMPLETED' : 'TODO';
+        updateTaskInDB(id, {
+          status: newStatus,
+          completedAt: newStatus === 'COMPLETED' ? new Date().toISOString() : undefined,
+        });
         return {
           ...t,
           status: newStatus,
@@ -514,6 +627,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     comment: string;
     timestamp?: string;
   }) => {
+    addCallLogInDB(data);
     const actId = `act-${Date.now()}`;
     const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
     const formattedDate = targetDate.toLocaleDateString('en-US', {
@@ -661,6 +775,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     comment: string;
     timestamp?: string;
   }) => {
+    addEmailLogInDB(data);
     const actId = `act-${Date.now()}`;
     const targetDate = data.timestamp ? new Date(data.timestamp) : new Date();
     const formattedDate = targetDate.toLocaleDateString('en-US', {

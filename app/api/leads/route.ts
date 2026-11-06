@@ -1,16 +1,44 @@
 import { NextResponse } from 'next/server';
-// import { supabase } from '@/lib/supabase'; // Uncomment when Supabase is configured
+import { supabase } from '@/lib/supabase';
+import { DEFAULT_ORG_ID } from '@/lib/services/crmService';
 
 export async function GET() {
-  // TODO: Replace with Supabase query
-  // const { data, error } = await supabase.from('leads').select('*');
-  // if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ message: 'Leads API ready', data: [] });
+  try {
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*')
+      .eq('org_id', DEFAULT_ORG_ID)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  // TODO: Replace with Supabase insert
-  // const { data, error } = await supabase.from('leads').insert(body);
-  return NextResponse.json({ message: 'Lead created', data: body });
+  try {
+    const body = await request.json();
+    const { data, error } = await supabase
+      .from('contacts')
+      .insert({
+        org_id: DEFAULT_ORG_ID,
+        ...body,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, data }, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
