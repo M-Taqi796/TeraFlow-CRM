@@ -5,20 +5,33 @@ import { useThemeContext } from '@/context/ThemeContext';
 interface DonutChartProps {
   period: TimePeriod;
   onPeriodChange: (period: TimePeriod) => void;
+  totalCalls?: number;
+  bookedMeetings?: number;
 }
 
-export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
+export function DonutChart({
+  period,
+  onPeriodChange,
+  totalCalls: propTotalCalls,
+  bookedMeetings: propBookedMeetings,
+}: DonutChartProps) {
   const { isDarkMode, theme } = useThemeContext();
-  const data = METRICS_DATA[period].chart;
+  const fallback = METRICS_DATA[period].chart;
 
-  const total = data.totalCalls + data.bookedMeetings;
+  const totalCalls = propTotalCalls ?? fallback.totalCalls;
+  const bookedMeetings = propBookedMeetings ?? fallback.bookedMeetings;
+  const conversionRate = totalCalls > 0
+    ? `${((bookedMeetings / totalCalls) * 100).toFixed(1)}%`
+    : '0.0%';
+
+  const total = (totalCalls + bookedMeetings) || 1;
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
-  const meetingsOffset = (data.bookedMeetings / total) * circumference;
+  const meetingsOffset = (bookedMeetings / total) * circumference;
   const callsOffset = circumference - meetingsOffset;
 
-  const callsPercent = Math.round((data.totalCalls / total) * 100);
-  const meetingsPercent = Math.round((data.bookedMeetings / total) * 100);
+  const callsPercent = Math.round((totalCalls / total) * 100);
+  const meetingsPercent = Math.round((bookedMeetings / total) * 100);
 
   return (
     <div
@@ -78,7 +91,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
           {/* Center label */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className={`text-base font-bold ${theme.textMain} leading-none`}>
-              {data.conversionRate}
+              {conversionRate}
             </span>
             <span className={`text-[10px] ${theme.textSubtle} font-medium mt-0.5`}>
               Booked
@@ -94,7 +107,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
               <span className={`font-medium ${theme.textMain}`}>Total Calls</span>
             </div>
             <div className="text-right">
-              <span className={`font-bold ${theme.textMain}`}>{data.totalCalls}</span>
+              <span className={`font-bold ${theme.textMain}`}>{totalCalls}</span>
               <span className={`text-[11px] ${theme.textSubtle} ml-1.5`}>({callsPercent}%)</span>
             </div>
           </div>
@@ -105,7 +118,7 @@ export function DonutChart({ period, onPeriodChange }: DonutChartProps) {
               <span className={`font-medium ${theme.textMain}`}>Booked Meetings</span>
             </div>
             <div className="text-right">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">{data.bookedMeetings}</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">{bookedMeetings}</span>
               <span className={`text-[11px] ${theme.textSubtle} ml-1.5`}>({meetingsPercent}%)</span>
             </div>
           </div>

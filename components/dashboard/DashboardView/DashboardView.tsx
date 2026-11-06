@@ -84,6 +84,50 @@ export function DashboardView({
     setTaskToComplete(null);
   };
 
+  // Dynamic metrics computed from live CRM data
+  const metrics = useMemo(() => {
+    let totalCalls = 0;
+    let connectedCalls = 0;
+
+    crm.people.forEach((p) => {
+      (p.activities || []).forEach((a) => {
+        if (a.type === 'call') {
+          totalCalls++;
+          if (a.callStatus === 'Answered') {
+            connectedCalls++;
+          }
+        }
+      });
+    });
+
+    const bookedMeetings = meetings.filter(
+      (m) => m.status === 'Deal Done' || m.status === 'Scheduled'
+    ).length;
+
+    const connectionRate = totalCalls > 0
+      ? `${((connectedCalls / totalCalls) * 100).toFixed(1)}% connection rate`
+      : '0.0% connection rate';
+
+    return {
+      newLeads: {
+        value: String(crm.people.length),
+        change: `${crm.people.filter((p) => p.stage === 'New Leads').length} in New Leads`,
+      },
+      callsAttempted: {
+        value: String(totalCalls),
+        change: `${totalCalls} calls logged`,
+      },
+      connectedCalls: {
+        value: String(connectedCalls),
+        change: connectionRate,
+      },
+      chart: {
+        totalCalls,
+        bookedMeetings,
+      },
+    };
+  }, [crm.people, meetings]);
+
   return (
     <>
       {/* Greeting row */}
@@ -108,29 +152,34 @@ export function DashboardView({
       <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <MetricCard
           label="New Leads"
-          value={METRICS_DATA[newLeadsPeriod].newLeads.value}
-          change={METRICS_DATA[newLeadsPeriod].newLeads.change}
+          value={metrics.newLeads.value}
+          change={metrics.newLeads.change}
           period={newLeadsPeriod}
           onPeriodChange={setNewLeadsPeriod}
           ariaLabel="New leads time period"
         />
         <MetricCard
           label="Calls Attempted"
-          value={METRICS_DATA[callsAttemptedPeriod].callsAttempted.value}
-          change={METRICS_DATA[callsAttemptedPeriod].callsAttempted.change}
+          value={metrics.callsAttempted.value}
+          change={metrics.callsAttempted.change}
           period={callsAttemptedPeriod}
           onPeriodChange={setCallsAttemptedPeriod}
           ariaLabel="Calls attempted time period"
         />
         <MetricCard
           label="Connected Calls"
-          value={METRICS_DATA[connectedCallsPeriod].connectedCalls.value}
-          change={METRICS_DATA[connectedCallsPeriod].connectedCalls.change}
+          value={metrics.connectedCalls.value}
+          change={metrics.connectedCalls.change}
           period={connectedCallsPeriod}
           onPeriodChange={setConnectedCallsPeriod}
           ariaLabel="Connected calls time period"
         />
-        <DonutChart period={chartPeriod} onPeriodChange={setChartPeriod} />
+        <DonutChart
+          period={chartPeriod}
+          onPeriodChange={setChartPeriod}
+          totalCalls={metrics.chart.totalCalls}
+          bookedMeetings={metrics.chart.bookedMeetings}
+        />
       </section>
 
       {/* Meetings Table */}

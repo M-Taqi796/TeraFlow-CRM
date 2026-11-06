@@ -45,7 +45,7 @@ export const DEFAULT_MEMBER_PERMISSIONS: UserPermissions = {
 export const INITIAL_CURRENT_USER: UserProfile = {
   id: 'u-taqi',
   name: 'Muhammad Taqi',
-  email: 'taqi@teraflow.io',
+  email: 'itstaqi2919@gmail.com',
   role: 'Team Lead',
   permissions: DEFAULT_LEAD_PERMISSIONS,
   status: 'active',

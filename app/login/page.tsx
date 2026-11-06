@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { createClient } from '@/utils/supabase/client';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -12,14 +13,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     setIsLoading(true);
-    // Simulate a brief loading state then redirect
-    setTimeout(() => {
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      if (error) {
+        setErrorMessage(error.message || 'Invalid email or password.');
+        setIsLoading(false);
+        return;
+      }
+
       router.push('/dashboard');
-    }, 800);
+      router.refresh();
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'An unexpected error occurred.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,6 +60,14 @@ export default function LoginPage() {
           </div>
 
           <form className="login-form" onSubmit={handleLogin} id="login-form">
+            {errorMessage && (
+              <div
+                role="alert"
+                className="p-3 mb-2 text-xs font-medium text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-in fade-in"
+              >
+                {errorMessage}
+              </div>
+            )}
             {/* Email */}
             <div className="login-field">
               <label htmlFor="login-email" className="login-label">

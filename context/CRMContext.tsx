@@ -385,6 +385,21 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return next;
     });
+
+    // Provision securely in database with bcrypt encryption
+    fetch('/api/team', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).then(async (res) => {
+      const json = await res.json();
+      if (!res.ok) {
+        toastError(json.error || 'Failed to provision team member in database');
+      }
+    }).catch((err) => {
+      console.error('Failed to provision team member:', err);
+    });
+
     markNavAsUnread('Teams');
     toastSuccess(`Added ${newMember.name} to the team`);
   }, [currentUser.role, markNavAsUnread, toastError, toastSuccess]);
@@ -915,8 +930,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const handleLogout = () => {
-    // Replace with router.push('/login') once auth is wired
+  const handleLogout = async () => {
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     window.location.href = '/login';
   };
 

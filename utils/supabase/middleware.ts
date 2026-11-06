@@ -74,7 +74,26 @@ export const updateSession = async (request: NextRequest) => {
   );
 
   // Refresh auth session
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login');
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api');
+
+  // Protected route check: If unauthenticated, redirect to /login
+  if (!user && !isLoginPage && !isApiRoute && request.nextUrl.pathname !== '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // If already authenticated and visiting /login, redirect to /dashboard
+  if (user && isLoginPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 };
