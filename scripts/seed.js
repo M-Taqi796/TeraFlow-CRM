@@ -1,12 +1,8 @@
 const { Client } = require('pg');
 
 const client = new Client({
-  host: 'aws-0-ap-northeast-2.pooler.supabase.com',
-  port: 5432,
-  user: 'postgres.zuoymwjmnqhqymalaxuf',
-  password: 'TeraOnic$$796',
-  database: 'postgres',
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
 const orgId = 'c74f1503-9d09-4ffc-bf08-aa7f09f12f43';
